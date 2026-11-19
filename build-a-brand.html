@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Figtree:wght@400;600;800&family=IBM+Plex+Mono:wght@500;600&family=Archivo+Black&family=DM+Serif+Display&family=Patrick+Hand&family=Nunito:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Direction: a brand agency's print studio. Paper white + key black, the four process inks (C, M, Y, K) as the only colours,
+     crop marks, mono spec labels, and one bold moment: an approval stamp on every answer. Single light theme by design. */
+  --paper:#F7F7F4; --sheet:#FFFFFF; --ink:#15171C; --muted:#5B606C; --rule:#D9D9D3;
+  --c:#00A0DC; --m:#E5007D; --y:#FFD200; --k:#15171C; --ok:#178A50; --okbg:#DDF3E6; --nobg:#FCE3EF; --halfbg:#FFF4BF;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.45}
+#app{max-width:720px;margin:0 auto;padding:0 16px 64px}
+h1,h2,h3{margin:0;line-height:1.08;text-wrap:balance}
+h1,h2{font-family:var(--display);font-weight:800;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;background:var(--sheet);border:2px solid var(--ink);border-radius:4px;padding:.65em 1em}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--c);outline-offset:3px}
+button:disabled{opacity:.4;cursor:not-allowed}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--sheet);border:2px solid var(--ink);border-radius:4px;padding:.6em .75em;width:100%}
+textarea{min-height:100px;resize:vertical}
+label{font-weight:600}
+.mono{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.muted{color:var(--muted)} .small{font-size:15px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.go{width:100%;background:var(--ink);color:#fff;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.02em;padding:18px;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
+.go:hover:not(:disabled){background:#2a2e37}
+.go span{font-family:var(--mono);font-size:14px;font-weight:500}
+.ghost{background:transparent;border-style:dashed;font-size:15px}
+/* ticker */
+.ticker{position:sticky;top:0;z-index:5;margin:0 -16px;background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:10px 16px;font-family:var(--mono)}
+.ticker .sym{font-weight:600;font-size:14px;letter-spacing:.1em;background:#fff;color:var(--ink);padding:2px 8px;border-radius:2px}
+.ticker .val{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;margin-left:auto}
+.ticker .val small{font-size:12px;opacity:.7;margin-left:4px}
+.ticker .d{font-size:13px;font-weight:600;min-width:104px;text-align:right;white-space:nowrap}
+@media (max-width:440px){.ticker .tl{display:none}.ticker .val{font-size:18px}.ticker{gap:10px}}
+.ticker .up{color:#5BE39A} .ticker .flat{color:#9aa0ac}
+.cmyk{display:flex;height:6px;margin:0 -16px}
+.cmyk i{flex:1}
+.ticker+.cmyk{margin-bottom:22px}
+/* crop-marked sheet */
+.sheet{position:relative;background:var(--sheet);padding:22px 20px;border:1px solid var(--rule)}
+.sheet:before,.sheet:after{content:"";position:absolute;width:14px;height:14px;border-color:var(--ink);border-style:solid}
+.sheet:before{top:-8px;left:-8px;border-width:0 0 1.5px 1.5px;transform:rotate(-90deg)}
+.sheet:after{bottom:-8px;right:-8px;border-width:1.5px 1.5px 0 0;transform:rotate(-90deg)}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:16px}
+.spec dt{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.spec dd{margin:0}
+/* start */
+.hero{padding:30px 0 6px}
+.hero h1{font-size:clamp(48px,12vw,88px);line-height:.92}
+.hero h1 em{font-style:normal;color:var(--m)}
+.jobs{border-top:2px solid var(--ink)}
+.job{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule)}
+.job b{font-family:var(--display);font-size:22px}
+.job h3{font-family:var(--body);font-weight:800;font-size:18px}
+.job .pts{font-family:var(--mono);font-size:13px;color:var(--muted)}
+/* level intro */
+.brief-no{font-family:var(--display);font-weight:800;font-size:clamp(90px,26vw,170px);line-height:.85;color:transparent;-webkit-text-stroke:2px var(--ink)}
+.intro h2{font-size:clamp(32px,7vw,48px)}
+/* question */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.segs{display:flex;gap:4px;flex:1;max-width:260px}
+.segs i{flex:1;height:8px;background:var(--rule)}
+.segs i.done{background:var(--ink)} .segs i.now{background:var(--m)}
+.clock{font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+.clock.late{color:var(--m)}
+.tbar{height:4px;background:var(--rule);margin-top:-8px}
+.tbar i{display:block;height:100%;background:var(--ink)}
+.q{font-family:var(--display);font-weight:500;font-size:clamp(22px,5vw,30px);line-height:1.22}
+.ask{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.chips{grid-template-columns:1fr}}
+.chip{display:grid;grid-template-columns:62px 1fr;padding:0;text-align:left;overflow:hidden;border-width:2px;min-height:72px}
+.chip .blk{display:flex;align-items:flex-end;justify-content:flex-start;padding:6px 8px;font-family:var(--mono);font-weight:600;font-size:15px;border-right:2px solid var(--ink)}
+.chip .lab{padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.chip .lab b{font-size:17px;line-height:1.2}
+.chip .lab small{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.chip:hover:not([aria-disabled]){transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.chip{transition:transform .12s,box-shadow .12s}
+.chip.right{box-shadow:5px 5px 0 var(--ok);border-color:var(--ok)}
+.chip.dim{opacity:.35}
+.opts{display:grid;gap:10px}
+.opt{display:grid;grid-template-columns:40px 1fr;gap:12px;text-align:left;padding:14px 16px;align-items:start;transition:transform .12s,box-shadow .12s}
+.opt:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.opt .l{font-family:var(--display);font-weight:800;font-size:20px;line-height:1.1}
+.big-tag{align-self:flex-start;background:var(--m);color:#fff;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px}
+.hint-btn{align-self:flex-start;background:transparent;border:1.5px dashed var(--ink);font-size:14px;padding:6px 12px}
+.hint{border-left:4px solid var(--c);background:#E6F6FC;padding:10px 14px;font-size:15px}
+/* feedback */
+.stampwrap{display:flex;align-items:center;gap:16px;min-height:96px}
+.stamp{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.06em;padding:8px 16px;border:4px solid currentColor;border-radius:6px;transform:rotate(-6deg);display:inline-block}
+.stamp.ok{color:var(--ok)} .stamp.half{color:#A07800} .stamp.no{color:var(--m)}
+@media (prefers-reduced-motion:no-preference){.stamp{animation:stamp .38s cubic-bezier(.2,1.6,.4,1) both}}
+@keyframes stamp{from{transform:rotate(-14deg) scale(1.8);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+.gain{font-family:var(--mono);font-size:15px}
+.gain b{color:var(--ok)}
+.why{border-top:2px solid var(--ink);padding-top:12px}
+.fbopt{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:14px 16px;border:2px solid var(--ink);border-radius:4px;background:var(--sheet)}
+.fbopt.best{background:var(--okbg);border-color:var(--ok)} .fbopt.half{background:var(--halfbg)} .fbopt.trap{background:var(--nobg)}
+.fbopt.dim{opacity:.55}
+.fbopt .l{font-family:var(--display);font-weight:800;font-size:20px}
+.fbopt .k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+/* level report */
+.report{font-family:var(--mono)}
+.report .bigv{font-family:var(--display);font-weight:800;font-size:clamp(34px,8vw,52px);font-variant-numeric:tabular-nums}
+/* studio */
+.preview{position:sticky;top:52px;z-index:3;background:var(--paper);padding:10px 0 12px;border-bottom:2px solid var(--ink)}
+.preview svg{display:block;width:100%;height:auto;max-width:560px;margin:0 auto}
+.sec{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start}
+.sec>b{font-family:var(--display);font-size:20px}
+.traits{display:flex;flex-wrap:wrap;gap:8px}
+.trait{padding:6px 14px;border-radius:999px;font-size:16px;border-width:1.5px}
+.trait.on{background:var(--ink);color:#fff}
+.sws{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sw{padding:0;text-align:left;overflow:hidden;font-size:13px;line-height:1.25;border-width:1.5px}
+.sw i{display:block;height:44px;border-bottom:1.5px solid var(--ink)}
+.sw span{display:block;padding:6px 8px}
+.sw.on{box-shadow:4px 4px 0 var(--ink);transform:translate(-2px,-2px)}
+.picks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.picks button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;font-size:14px;border-width:1.5px}
+.picks button.on{box-shadow:4px 4px 0 var(--ink);transform:translate(-2px,-2px);background:var(--y)}
+/* results */
+.cert svg{display:block;width:100%;height:auto}
+.cert{background:var(--sheet);border:2px solid var(--ink);padding:22px 20px;position:relative}
+.cert h2{font-size:clamp(28px,6vw,40px)}
+.cert table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.cert td{padding:8px 0;border-bottom:1px solid var(--rule);vertical-align:top;font-size:16px}
+.cert td:last-child{text-align:right;font-family:var(--mono);font-weight:600}
+.cert tr.tot td{border-bottom:2px solid var(--ink);font-weight:800}
+.rank{display:inline-block;background:var(--y);font-family:var(--display);font-weight:800;padding:6px 12px;font-size:18px}
+.note{border-left:4px solid var(--m);background:var(--nobg);padding:10px 14px;font-size:15px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LEVELS=[
+ {t:"Name it",step:"Step 1: Name selection",
+  intro:"Mariam and Omar need a name, and a name has to work for years. Every name below has a problem except one. No definitions this time: use what you learned in the lecture.",
+  hint:"A good brand name suggests something about the product, is easy to say, spell and remember, is distinctive (so it can be protected), can grow into new products, and works in other languages.",
+  cats:["Hard to say or remember","Not distinctive","Can’t grow into new products","Sends the wrong message"],
+  items:[
+   {type:"pick",pts:6,q:"Pick the brand name for the sneakers. Mariam and Omar want to sell more than shoes later: socks, bags and sportswear.",o:[
+    ["Rova","best","Short and easy to say in any language. It suggests roving and moving, it isn’t tied to shoes, and nobody else owns it."],
+    ["Solemate","half","Clever and memorable, and it suggests shoes. But “sole” ties it to footwear, so bags and sportswear won’t fit the name."],
+    ["SneakerHub","trap","Not distinctive: “sneaker” and “hub” are words anyone can use, so it can’t be protected. It also sounds like a shop, not a maker."],
+    ["Turtle Run","trap","Fun and easy to say, but a turtle means slow: the wrong message for sports shoes."]]},
+   {type:"cls",q:"“Comfy Chairs” for a new furniture brand",a:1,x:"Any furniture brand could use these words, so the name can’t be protected or stand out."},
+   {type:"cls",q:"“Ptarmigan” for a travel app (it starts with a silent P)",a:0,x:"Most people can’t spell it or say it, so they can’t search for it or recommend it."},
+   {type:"cls",q:"“Tortoise Taxi” for a ride app that promises quick pick-ups",a:3,x:"A tortoise means slow: the opposite of the promise."},
+   {type:"cls",q:"“PizzaPlanet” for a restaurant that plans to become a full fast-food chain with burgers and chicken",a:2,x:"The name locks the brand into pizza, so it can’t grow with the menu."},
+   {type:"cls",q:"“Nova” for a car brand that will sell in Spain and Mexico, where “no va” means “it doesn’t go”",a:3,x:"In Spanish it sounds like “doesn’t go”: a terrible message for a car. Names must work in every market."}]},
+ {t:"Position it",step:"Step 2: Positioning",
+  intro:"Rova needs a clear place in customers’ minds. Watch out: some taglines sound like one level but really belong to another.",
+  hint:"Product features: what it HAS (materials, numbers, technology). Benefits: what it DOES for the customer. Beliefs & values: what the brand BELIEVES about the world.",
+  cats:["Product features","Benefits","Beliefs & values"],
+  items:[
+   {type:"cls",q:"“Soles made from 100% recycled rubber.”",a:0,x:"It sounds green, but it describes what the shoe is made of: a feature."},
+   {type:"cls",q:"“Walk all day without sore feet.”",a:1,x:"The result you feel when you wear them: a benefit."},
+   {type:"cls",q:"“We believe good shoes shouldn’t cost the planet.”",a:2,x:"An idea about what is right in the world: a value."},
+   {type:"cls",q:"“Only 240 grams per shoe.”",a:0,x:"A number about the product itself: a feature."},
+   {type:"cls",q:"“Feel ready for anything, from class to the gym.”",a:1,x:"What the shoe does for you: a benefit, even though it sounds like a lifestyle."},
+   {type:"cls",q:"“Everyone deserves to move freely, wherever they come from.”",a:2,x:"A belief about how the world should be: a value."},
+   {type:"pick",pts:8,q:"Rova’s ads say “The most comfortable sneaker you’ll own.” A big rival now says exactly the same. Which new positioning is hardest to copy?",o:[
+    ["Made to last and made fairly: free sole repairs for life, and every worker paid a fair wage","best","A value that Rova proves with real actions. Rivals would have to change how they work to copy it, not just their slogan."],
+    ["Run faster, jump higher","half","A stronger benefit, but any sneaker brand can promise it tomorrow."],
+    ["Rova believes in a better world","trap","It sounds like a value, but it is vague and has nothing to do with shoes. Customers see it as empty words."],
+    ["Now with triple-layer foam soles","trap","A feature. A rival only needs to add a fourth layer to win."]]}]},
+ {t:"Whose name is on it?",step:"Step 3: Sponsorship",
+  intro:"Shops, studios and other brands all want a piece of Rova. Look carefully at whose name is on the box and who does the work.",
+  hint:"Manufacturer brand: the maker’s own name. Private brand: a name owned by the store or seller. Licensing: paying to use someone else’s name or character. Co-branding: two brands’ names together on one product, made together.",
+  cats:["Manufacturer brand","Private brand","Licensing","Co-branding"],
+  items:[
+   {type:"cls",q:"A sports store chain sells sneakers called “ProSport Basics”. Rova makes them, but only the ProSport name is on the box. What is ProSport Basics?",a:1,x:"The seller owns the name, even though Rova makes the shoes."},
+   {type:"cls",q:"Rova pays a film studio to put its famous superhero on a kids’ sneaker. Only the superhero is on the box. Rova makes and sells it.",a:2,x:"Rova rents the character for a fee and does all the work."},
+   {type:"cls",q:"A sneaker designed by Rova and a famous streetwear label together. Both logos are on the shoe and both brands promote it.",a:3,x:"Two names, one product, both partners involved."},
+   {type:"cls",q:"A department store puts Rova sneakers on a special display with its own discount tag.",a:0,x:"The store helps sell them, but the shoes still carry Rova’s own name."},
+   {type:"pick",pts:8,q:"ProSport offers a big deal: make 20,000 pairs a year for “ProSport Basics” at a low price. What should Rova do?",o:[
+    ["Accept, but with a different, simpler design, so Rova still offers something the store shoe doesn’t","best","Rova earns from spare factory time and keeps a reason for customers to pay more for its own brand."],
+    ["Refuse, and use the spare factory time to make more Rova pairs, even without new shops to sell them in","half","It protects the brand, but extra shoes with nowhere to sell them only waste money."],
+    ["Accept with the same design: more pairs sold means more profit","trap","Customers soon learn they can get the same shoe for less, so why pay for Rova? The name loses its extra value."],
+    ["Accept, and add a small “made by Rova” line on ProSport’s box to build awareness","trap","It links the Rova name to a cheap store product and teaches customers the cheap shoe is just as good."]]}]},
+ {t:"Grow it",step:"Step 4: Brand development",
+  intro:"The company is ready to grow. Some moves look alike: check the brand name and the product category every time.",
+  hint:"Line extension: same brand, same category. Brand extension: same brand, new category. Multibrands: different brands in the same category. New brand: new brand in a new category.",
+  cats:["Line extension","Brand extension","Multibrands","New brand"],
+  items:[
+   {type:"cls",q:"Rova launches a high-top version and kids’ sizes of its sneaker.",a:0,x:"New styles and sizes, but still Rova and still sneakers."},
+   {type:"cls",q:"Rova launches Rova backpacks and a Rova sportswear line.",a:1,x:"The Rova name moves into new categories: bags and clothing."},
+   {type:"cls",q:"The company buys a rival sneaker brand, StepUp, and keeps selling it next to Rova.",a:2,x:"Two different brands, same company, same category."},
+   {type:"cls",q:"The company starts making yoga mats under the name Zenfloor.",a:3,x:"A new name for a new category."},
+   {type:"pick",pts:8,q:"The company wants to sell very cheap, low-quality flip-flops in supermarkets. What should it do?",o:[
+    ["Launch them under a completely new brand name, so Rova keeps its quality image","best","The company gets into the cheap market without teaching customers that Rova means cheap."],
+    ["Make a well-made Rova sandal at Rova’s normal price instead","half","It protects Rova, but it is not a cheap supermarket product, so it misses the market the company was after."],
+    ["Call them “Rova Flip”","trap","A brand extension that pulls Rova down. Customers start to see Rova as cheap and stop paying more for its sneakers."],
+    ["Use the Rova name, but in small letters on a plain bag","trap","The name is still there. Customers will still link Rova to cheap flip-flops."]]}]},
+ {t:"The crisis",step:"Brand equity",
+  intro:"Rova is now famous for the curved wave logo on the side of every shoe. One decision can protect years of brand equity, or throw it away.",
+  hint:"Brand equity is the extra value customers give a name: awareness, trust, feelings and loyalty. Remember Cracker Barrel (the logo change lasted a week) and Twitter becoming X.",
+  cats:[],
+  items:[
+   {type:"pick",pts:12,q:"A new manager wants to rename Rova “RV” and replace the wave with a plain square next month, “to look modern”. What do you do?",o:[
+    ["Refresh the logo gently, keep the wave and the name, and test it with loyal customers first","best","The brand looks fresh, customers keep what they love, and testing first avoids a Cracker Barrel moment."],
+    ["Keep the old logo, but try the modern look on one new collection first","half","A careful test, but a second look for the same brand can confuse customers about who Rova is."],
+    ["Do it, and run a big ad campaign explaining why it is better","trap","Cracker Barrel explained its change too. Customers were angry anyway, because the logo carried their feelings for the brand."],
+    ["Keep the wave, but change the name to RV","trap","Like Twitter becoming X: the name carries years of recognition, and changing it throws that value away."]]}]}
+];
+
+const START_VALUE=1000000, PER_POINT=100000, CLS_PTS=2;
+const AUTO=LEVELS.reduce((a,L)=>a+L.items.reduce((b,it)=>b+(it.type==="cls"?CLS_PTS:it.pts),0),0);
+const TEACHER=20;
+const KEY="ABCD";
+const INK=[["#00A0DC","C","#15171C"],["#E5007D","M","#FFFFFF"],["#FFD200","Y","#15171C"],["#15171C","K","#FFFFFF"]];
+
+/* ================= state ================= */
+const LS="buildbrand-rova-solo-v1";
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function shuffle(n){const a=Array.from({length:n},(_,i)=>i);for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function blank(){return{screen:"start",group:"",members:"",section:"",L:0,I:0,fb:false,plan:null,ans:{},hint:{},studio:{traits:[],main:null,accent:null,icon:null,shape:null,font:null,slogan:"",why:""},attempt:0,finished:null,lastGain:null};}
+let S=blank();
+try{const r=lsGet(LS);if(r)S=Object.assign(blank(),JSON.parse(r));}catch(e){}
+function save(){lsSet(LS,JSON.stringify(S));}
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function makePlan(){
+  return LEVELS.map(L=>{const cls=L.items.map((it,i)=>i).filter(i=>L.items[i].type==="cls");const picks=L.items.map((it,i)=>i).filter(i=>L.items[i].type==="pick");
+    const s=shuffle(cls.length).map(k=>cls[k]);
+    const order=L.items[0].type==="pick"?picks.concat(s):s.concat(picks);
+    return{order,btn:L.items.map(it=>shuffle(it.type==="cls"?L.cats.length:it.o.length))};});
+}
+function ptsFor(L,i,a){const it=LEVELS[L].items[i];if(a==null||a<0)return 0;let p;if(it.type==="cls")p=a===it.a?CLS_PTS:0;else{const k=it.o[a][1];p=k==="best"?it.pts:k==="half"?it.pts/2:0;}return S.hint[L+"_"+i]?Math.floor(p/2):p;}
+function total(){let t=0;for(const k in S.ans){const [L,i]=k.split("_").map(Number);t+=ptsFor(L,i,S.ans[k]);}return t;}
+function levelPts(L){let t=0,m=0;LEVELS[L].items.forEach((it,i)=>{m+=it.type==="cls"?CLS_PTS:it.pts;t+=ptsFor(L,i,S.ans[L+"_"+i]);});return[t,m];}
+const fmt=n=>n.toLocaleString("en-US");
+const value=()=>START_VALUE+PER_POINT*total();
+
+/* ================= timer ================= */
+const T_CLS=45,T_PICK=90;let tStart=0,tIv=null,tLen=0;
+function startTimer(len){tLen=len;tStart=Date.now();clearInterval(tIv);tIv=setInterval(()=>{const left=tLen-(Date.now()-tStart)/1000;const el=document.getElementById("tm");
+  if(el){const s=Math.max(0,Math.ceil(left));el.textContent="0:"+String(s).padStart(2,"0").slice(-2);if(s>=60)el.textContent="1:"+String(s-60).padStart(2,"0");el.classList.toggle("late",left<=10);}
+  const bb=document.getElementById("tb");if(bb)bb.style.width=Math.max(0,left/tLen*100)+"%";if(left<=0){clearInterval(tIv);choose(-1);}},250);}
+function clockText(len){return len>=60?"1:"+String(len-60).padStart(2,"0"):"0:"+String(len).padStart(2,"0");}
+function choose(v){if(S.screen!=="item"||S.fb)return;clearInterval(tIv);const i=S.plan[S.L].order[S.I];const before=value();S.ans[S.L+"_"+i]=v;S.lastGain=value()-before;S.fb=true;save();render();}
+
+/* ================= studio helpers ================= */
+const TRAITS=["Honest","Energetic","Warm","Playful","Premium","Rebellious","Calm","Smart","Natural","Bold"];
+const COLS=[["#2E7D4F","Green","natural, healthy"],["#F28C28","Orange","energy, fun"],["#C9A227","Gold","premium, special"],["#1F1F1F","Black","strong, luxury"],["#2B6CB0","Blue","trust, calm"],["#D7263D","Red","excitement, speed"],["#7B4B2A","Brown","earthy, real"],["#F6A5C0","Pink","playful, soft"]];
+const ICONS=[["Wave","wave"],["Wing","wing"],["Mountain","mountain"],["Star","star"],["Lightning","bolt"],["Leaf","leaf"]];
+const SHAPES=[["Circle","circle"],["Badge","badge"],["No shape","none"]];
+const FONTS=[["Handwritten","'Patrick Hand', cursive"],["Bold modern","'Archivo Black', sans-serif"],["Classic","'DM Serif Display', serif"],["Rounded","'Nunito', sans-serif"]];
+function lum(hex){const n=parseInt(hex.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255;const f=c=>c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4);return .2126*f(r)+.7152*f(g)+.0722*f(b);}
+const onCol=hex=>lum(hex)>.28?"#15171C":"#FFFFFF";
+function iconSVG(k,fill,ink){const st=`stroke="${ink}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+  switch(k){
+   case "wave":return `<path d="M6 40 C16 18 28 18 34 31 C40 44 50 44 58 22 L58 34 C50 56 38 56 32 43 C26 30 16 30 6 52 Z" fill="${fill}" ${st}/>`;
+   case "wing":return `<path d="M8 46 C18 22 38 12 58 12 C52 21 45 25 37 27 C45 29 50 32 54 36 C42 41 31 41 23 39 C18 43 13 46 8 46 Z" fill="${fill}" ${st}/>`;
+   case "mountain":return `<path d="M6 50 L25 18 L35 33 L43 23 L58 50 Z" fill="${fill}" ${st}/><path d="M25 18 L30 27 L26 30 L21 25" fill="none" ${st}/>`;
+   case "star":return `<path d="M32 8 L38.5 24.5 L56 25.5 L42.5 36.5 L47 54 L32 44.5 L17 54 L21.5 36.5 L8 25.5 L25.5 24.5 Z" fill="${fill}" ${st}/>`;
+   case "bolt":return `<path d="M36 8 L16 36 L30 36 L26 56 L48 26 L34 26 Z" fill="${fill}" ${st}/>`;
+   case "leaf":return `<path d="M14 50 C14 26 30 12 52 12 C52 36 38 50 14 50 Z" fill="${fill}" ${st}/><path d="M14 50 C26 38 36 28 46 18" fill="none" ${st}/>`;
+  }return "";}
+function logoSVG(st,size){const main=COLS[st.main]?COLS[st.main][0]:"#15171C",acc=COLS[st.accent]?COLS[st.accent][0]:"#FFD200";
+  const shape=SHAPES[st.shape]?SHAPES[st.shape][1]:"none";let bg="";
+  if(shape==="circle")bg=`<circle cx="32" cy="32" r="29" fill="#FFFFFF" stroke="#15171C" stroke-width="3"/>`;
+  if(shape==="badge")bg=`<rect x="4" y="4" width="56" height="56" rx="14" fill="#FFFFFF" stroke="#15171C" stroke-width="3"/>`;
+  const icon=ICONS[st.icon]?iconSVG(ICONS[st.icon][1],shape==="none"?acc:main,"#15171C"):"";
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64">${bg}<g transform="${shape==="none"?"":"translate(8 8) scale(.75)"}">${icon}</g></svg>`;}
+function wrapperSVG(st){
+  const main=COLS[st.main]?COLS[st.main][0]:"#FFFFFF",acc=COLS[st.accent]?COLS[st.accent][0]:"#E6E6E1";
+  const txt=onCol(main),font=FONTS[st.font]?FONTS[st.font][1]:"'Figtree', sans-serif";
+  const slogan=(st.slogan||"Your slogan goes here").slice(0,40);
+  const logo=logoSVG(st,74).replace('<svg ','<svg x="32" y="92" ');
+  const side=ICONS[st.icon]?`<g transform="translate(398 128) scale(.5)">${iconSVG(ICONS[st.icon][1],acc,"#15171C")}</g>`:"";
+  return `<svg width="540" height="210" viewBox="0 0 540 210" role="img" aria-label="Rova shoebox and sneaker preview">
+   <rect x="20" y="78" width="270" height="118" fill="${main}" stroke="#15171C" stroke-width="3"/>
+   <rect x="12" y="50" width="286" height="36" fill="${acc}" stroke="#15171C" stroke-width="3"/>
+   <text x="155" y="74" text-anchor="middle" font-family="'Figtree', sans-serif" font-weight="600" font-size="15" fill="${onCol(acc)}">${esc(slogan)}</text>
+   ${logo}
+   <text x="116" y="150" font-family="${font.replace(/'/g,"&apos;")}" font-size="44" fill="${txt}">Rova</text>
+   <g transform="translate(312 52)">
+    <path d="M14 96 C12 66 22 44 42 42 C60 40 70 54 92 58 C124 64 156 70 182 86 C198 96 206 106 206 116 L14 116 Z" fill="${main}" stroke="#15171C" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M14 76 C14 62 18 52 26 48 L32 84 L14 90 Z" fill="${acc}" stroke="#15171C" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M62 50 L70 62 M74 52 L82 64 M86 56 L94 68 M98 60 L106 72" stroke="${txt}" stroke-width="3" stroke-linecap="round"/>
+    <path d="M6 114 L212 114 C214 128 208 138 194 138 L18 138 C8 138 4 128 6 114 Z" fill="#FFFFFF" stroke="#15171C" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M30 126 L190 126" stroke="${acc}" stroke-width="4" stroke-linecap="round"/>
+   </g>
+   ${side}
+  </svg>`;}
+
+
+/* ================= views ================= */
+function ticker(){const g=S.lastGain;const showD=S.screen==="item"&&S.fb;
+  const named=S.L>0||S.screen==="done"||S.screen==="written"||S.screen==="res";
+  return `<div class="ticker"><span class="sym">${named?"ROVA":"BRAND"}</span><span class="mono tl" style="font-size:12px;opacity:.75">Brand value</span><span class="val" id="tv">${fmt(value())}<small>EGP</small></span><span class="d ${showD&&g>0?"up":"flat"}">${showD?(g>0?`▲ +${fmt(g)}`:"— no change"):"&nbsp;"}</span></div><div class="cmyk" aria-hidden="true">${INK.map(c=>`<i style="background:${c[0]}"></i>`).join("")}</div>`;}
+function vStart(){
+  const ready=S.group.trim().length>=2&&S.members.trim().length>=3;
+  return `<div class="stack" style="padding-top:10px">
+  <div class="cmyk" aria-hidden="true" style="margin-top:0">${INK.map(c=>`<i style="background:${c[0]}"></i>`).join("")}</div>
+  <div class="hero stack" style="gap:12px"><p class="mono muted">BUS 1410 · Introduction to Marketing · Solo game</p><h1>Build a<br><em>Brand</em></h1>
+   <p style="font-size:20px;max-width:34ch">You run your own branding agency. You have one client, five briefs and one goal: make the brand worth as much as possible.</p></div>
+  <div class="sheet"><p class="mono" style="margin-bottom:12px">Client brief</p><dl class="spec">
+   <dt>Client</dt><dd>Mariam and Omar, two friends from Alexandria</dd>
+   <dt>Product</dt><dd>Comfortable, well-made sneakers</dd>
+   <dt>Market</dt><dd>University students; sports shops next</dd>
+   <dt>Brand value</dt><dd><b>${fmt(START_VALUE)} EGP</b> today. Every good decision raises it.</dd></dl></div>
+  <div class="jobs">${LEVELS.map((L,i)=>{const m=L.items.reduce((b,it)=>b+(it.type==="cls"?CLS_PTS:it.pts),0);return `<div class="job"><b>0${i+1}</b><div><h3>${esc(L.t)}</h3><p class="small muted">${esc(L.step)}</p></div><span class="pts">${m} PTS</span></div>`;}).join("")}
+   <div class="job"><b>06</b><div><h3>Brand Studio</h3><p class="small muted">Design the identity. Marked by your teacher</p></div><span class="pts">${TEACHER} PTS</span></div></div>
+  <div class="sheet small"><p class="mono" style="margin-bottom:8px">House rules</p><p>45 seconds per quick question, 90 seconds per big decision. Time out = 0 points. Hints are allowed, but a hint halves that question’s points. Play on your own phone and make your own decisions.</p></div>
+  <div class="stack" style="gap:8px">
+   <label for="gp">Your full name</label><input type="text" id="gp" data-f="group" maxlength="60" autocomplete="name" value="${esc(S.group)}">
+   <label for="mb">Student ID</label><input type="text" id="mb" data-f="members" maxlength="30" inputmode="numeric" value="${esc(S.members)}">
+   <label for="sc">Section <span class="muted" style="font-weight:400">(optional)</span></label><input type="text" id="sc" data-f="section" maxlength="30" value="${esc(S.section)}"></div>
+  <button class="go" data-act="begin" ${ready?"":"disabled"}>Open brief 01 <span>→</span></button></div>`;
+}
+function vIntro(){const L=LEVELS[S.L];
+  return `<div class="stack intro"><div class="brief-no" aria-hidden="true">0${S.L+1}</div><p class="mono muted">Brief 0${S.L+1} / ${esc(L.step)}</p><h2>${esc(L.t)}</h2>
+   <div class="sheet"><p>${esc(L.intro)}</p></div><button class="go" data-act="startlevel">Start the brief <span>→</span></button></div>`;}
+function chipBtn(ci,pos,cls,act){const c=INK[ci%4];return `<button class="chip ${cls||""}" ${act||""}><span class="blk" style="background:${c[0]};color:${c[2]}">${KEY[pos]}</span><span class="lab"><small>OPTION ${KEY[pos]}</small><b>${esc(LEVELS[S.L].cats[ci])}</b></span></button>`;}
+function vItem(){
+  const L=LEVELS[S.L],P=S.plan[S.L],i=P.order[S.I],it=L.items[i],btn=P.btn[i],a=S.ans[S.L+"_"+i];
+  const key=S.L+"_"+i,used=!!S.hint[key],len=it.type==="cls"?T_CLS:T_PICK;
+  const segs=`<div class="segs" aria-label="Question ${S.I+1} of ${L.items.length}">${L.items.map((_,k)=>`<i class="${k<S.I||(k===S.I&&S.fb)?"done":k===S.I?"now":""}"></i>`).join("")}</div>`;
+  const head=`<div class="qhead"><span class="mono">Brief 0${S.L+1} · ${S.I+1}/${L.items.length}</span>${segs}${S.fb?`<span class="clock" aria-hidden="true">✓</span>`:`<span class="clock" id="tm">${clockText(len)}</span>`}</div>${S.fb?"":`<div class="tbar" aria-hidden="true"><i id="tb" style="width:100%"></i></div>`}`;
+  const hintHTML=S.fb?"":(used?`<div class="hint"><b>Hint:</b> ${esc(L.hint)}</div>`:`<button class="hint-btn" data-act="hint">Show a hint · question worth half</button>`);
+  if(it.type==="cls"){
+    const qline=L.cats.length===3?"Which level of positioning is this?":(S.L===0?"Which rule does this name break?":"Which one is this?");
+    if(!S.fb)return `<div class="stack">${head}<p class="ask">${qline}</p><h2 class="q">${esc(it.q)}</h2>${hintHTML}<div class="chips">${btn.map((ci,p)=>chipBtn(ci,p,"",`data-act="cls" data-i="${ci}"`)).join("")}</div></div>`;
+    const ok=a===it.a;const g=ptsFor(S.L,i,a);
+    return `<div class="stack">${head}<div class="stampwrap"><span class="stamp ${ok?"ok":"no"}">${ok?"Approved":(a<0?"Time’s up":"Rejected")}</span><p class="gain">${g?`<b>+${g} pts</b> · value +${fmt(g*PER_POINT)} EGP${used?"<br><span class='muted'>half points: hint used</span>":""}`:"+0 pts"}</p></div>
+     <h2 class="q" style="font-size:20px">${esc(it.q)}</h2><div class="chips">${btn.map((ci,p)=>chipBtn(ci,p,ci===it.a?"right":"dim",'tabindex="-1" aria-disabled="true"')).join("")}</div>
+     <div class="why"><p><b>${esc(L.cats[it.a])}.</b> ${esc(it.x)}</p></div><button class="go" data-act="next">Next <span>→</span></button></div>`;
+  }
+  if(!S.fb)return `<div class="stack">${head}<span class="big-tag">Big decision · up to ${it.pts} pts</span><h2 class="q">${esc(it.q)}</h2><p class="small muted">Every option sounds fine. Only one is the best for the brand.</p>${hintHTML}
+     <div class="opts">${btn.map((k,p)=>`<button class="opt" data-act="pick" data-i="${k}"><span class="l">${KEY[p]}</span><span>${esc(it.o[k][0])}</span></button>`).join("")}</div></div>`;
+  const kind=a>=0?it.o[a][1]:null;const got=ptsFor(S.L,i,a);
+  const stamp=a<0?["no","Time’s up"]:kind==="best"?["ok","Approved"]:kind==="half"?["half","Half right"]:["no","Rejected"];
+  return `<div class="stack">${head}<div class="stampwrap"><span class="stamp ${stamp[0]}">${stamp[1]}</span><p class="gain">${got?`<b>+${got} pts</b> · value +${fmt(got*PER_POINT)} EGP${used?"<br><span class='muted'>half points: hint used</span>":""}`:"+0 pts · no value added"}</p></div>
+     <div class="opts">${btn.map((k,p)=>{const o=it.o[k];return `<div class="fbopt ${o[1]} ${k===a||o[1]==="best"?"":"dim"}"><span class="l">${KEY[p]}</span><div class="stack" style="gap:4px"><span class="k">${o[1]==="best"?"Best move":o[1]==="half"?"Half right":"Trap"}${k===a?" · your pick":""}</span><p><b>${esc(o[0])}</b></p><p class="small">${esc(o[2])}</p></div></div>`;}).join("")}</div>
+     <button class="go" data-act="next">Next <span>→</span></button></div>`;
+}
+function vLevelDone(){const [t,m]=levelPts(S.L);const last=S.L===LEVELS.length-1;
+  return `<div class="stack"><p class="mono muted">Brief 0${S.L+1} complete</p><h2 style="font-size:clamp(30px,7vw,44px)">${esc(LEVELS[S.L].t)}: ${t} of ${m} points</h2>
+   <div class="sheet report"><p class="mono muted">Brand value now</p><p class="bigv">${fmt(value())} EGP</p>
+   ${S.L===0?`<p class="small" style="font-family:var(--body);margin-top:8px">The client picked <b>Rova</b> as the name, so that’s the brand from now on.</p>`:""}</div>
+   <button class="go" data-act="nextlevel">${last?"Open the Brand Studio":"Open brief 0"+(S.L+2)} <span>→</span></button></div>`;}
+function studioReady(){const t=S.studio;return t.traits.length===3&&t.main!=null&&t.accent!=null&&t.main!==t.accent&&t.icon!=null&&t.shape!=null&&t.font!=null&&t.slogan.trim().length>=5&&t.why.trim().length>=30;}
+function vStudio(){const t=S.studio;
+  return `<div class="stack"><p class="mono muted">Brief 06 / Brand identity · marked by your teacher</p><h2 style="font-size:clamp(30px,7vw,44px)">Brand Studio</h2>
+  <div class="sheet small"><p class="mono" style="margin-bottom:8px">Marked out of ${TEACHER}</p><p>Personality, colours and logo match each other and Rova’s positioning (5) · the logo is simple, distinctive and easy to recognise (5) · the slogan is at the beliefs & values level and believable (5) · your explanation uses ideas from the lecture (5)</p></div>
+  <div class="preview" aria-live="polite">${wrapperSVG(t)}</div>
+  <div class="sec"><b>1</b><div class="stack" style="gap:8px"><h3>Personality <span class="muted small">· pick exactly 3</span></h3><div class="traits">${TRAITS.map((x,i)=>`<button class="trait ${t.traits.includes(i)?"on":""}" data-act="trait" data-i="${i}" aria-pressed="${t.traits.includes(i)}">${x}</button>`).join("")}</div></div></div>
+  <div class="sec"><b>2</b><div class="stack" style="gap:8px"><h3>Main colour</h3><div class="sws">${COLS.map((c,i)=>`<button class="sw ${t.main===i?"on":""}" data-act="main" data-i="${i}" aria-pressed="${t.main===i}"><i style="background:${c[0]}"></i><span><b>${c[1]}</b><br>${c[2]}</span></button>`).join("")}</div></div></div>
+  <div class="sec"><b>3</b><div class="stack" style="gap:8px"><h3>Accent colour</h3><div class="sws">${COLS.map((c,i)=>`<button class="sw ${t.accent===i?"on":""}" data-act="accent" data-i="${i}" aria-pressed="${t.accent===i}" ${t.main===i?"disabled":""}><i style="background:${c[0]}"></i><span><b>${c[1]}</b><br>${c[2]}</span></button>`).join("")}</div></div></div>
+  <div class="sec"><b>4</b><div class="stack" style="gap:8px"><h3>Logo icon</h3><div class="picks">${ICONS.map((x,i)=>`<button class="${t.icon===i?"on":""}" data-act="icon" data-i="${i}" aria-pressed="${t.icon===i}"><svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true">${iconSVG(x[1],"#FFFFFF","#15171C")}</svg>${x[0]}</button>`).join("")}</div></div></div>
+  <div class="sec"><b>5</b><div class="stack" style="gap:8px"><h3>Logo shape</h3><div class="picks">${SHAPES.map((x,i)=>`<button class="${t.shape===i?"on":""}" data-act="shape" data-i="${i}" aria-pressed="${t.shape===i}">${x[0]}</button>`).join("")}</div></div></div>
+  <div class="sec"><b>6</b><div class="stack" style="gap:8px"><h3>Font</h3><div class="picks" style="grid-template-columns:1fr 1fr">${FONTS.map((x,i)=>`<button class="${t.font===i?"on":""}" data-act="font" data-i="${i}" aria-pressed="${t.font===i}"><span style="font-family:${x[1]};font-size:24px">Rova</span>${x[0]}</button>`).join("")}</div></div></div>
+  <div class="sec"><b>7</b><div class="stack" style="gap:8px"><label for="slg"><h3>Slogan at the beliefs & values level</h3></label><input type="text" id="slg" data-st="slogan" maxlength="60" value="${esc(t.slogan)}"></div></div>
+  <div class="sec"><b>8</b><div class="stack" style="gap:8px"><label for="why"><h3>Why does this identity fit Rova?</h3></label><textarea id="why" data-st="why" maxlength="500" placeholder="Link your personality, colours and logo to Rova’s positioning">${esc(t.why)}</textarea></div></div>
+  <p class="small muted">You can’t change your design after you submit it.</p>
+  <button class="go" data-act="finish" id="finishBtn" ${studioReady()?"":"disabled"}>Submit to the client <span>→</span></button></div>`;}
+function badge(t){const p=t/AUTO;return p>=.8?"Brand Legend":p>=.6?"Brand Builder":p>=.4?"Rising Brand":"Brand in Trouble";}
+function memberList(){return [S.members.trim()].filter(Boolean);}
+function resultText(){
+  const t=total();const d=new Date(S.finished||Date.now());const w=S.studio;
+  return [`BUILD A BRAND · BUS 1410`,`Name: ${S.group}`,`Student ID: ${S.members.trim()}`,S.section?`Section: ${S.section}`:null,`Finished: ${d.toLocaleString()}`,`Attempt: ${S.attempt}`,
+   ...LEVELS.map((L,i)=>{const [a,m]=levelPts(i);return `Level ${i+1} (${L.t}): ${a} / ${m}`;}),
+   `Auto score (Levels 1–5): ${t} / ${AUTO}`,`Level 6 (teacher): ___ / ${TEACHER}`,`Final: ___ / 100`,`Brand value: ${fmt(value())} EGP`,
+   `Level 6 personality: ${w.traits.map(i=>TRAITS[i]).join(", ")}`,`Level 6 colours: ${COLS[w.main][1]} (main), ${COLS[w.accent][1]} (accent)`,`Level 6 logo: ${ICONS[w.icon][0]}, ${SHAPES[w.shape][0].toLowerCase()}, ${FONTS[w.font][0].toLowerCase()} font`,`Level 6 slogan: ${w.slogan.trim()}`,`Level 6 why it fits: ${w.why.trim()}`].filter(Boolean).join("\n");
+}
+function vResults(){
+  const t=total();const d=new Date(S.finished);const w=S.studio;
+  return `<div class="stack"><p class="mono muted">Final brand report</p>
+  <div class="cert stack"><div class="row" style="justify-content:space-between"><span class="rank">${badge(t)}</span><span class="mono muted">${esc(d.toLocaleString())}</span></div>
+   <h2>${esc(S.group)}</h2><p class="small muted">ID ${esc(S.members.trim())}${S.section?" · Section "+esc(S.section):""} · Attempt ${S.attempt}</p>
+   <div><p class="mono muted">Brand value</p><p style="font-family:var(--display);font-weight:800;font-size:clamp(30px,7vw,44px)">${fmt(value())} EGP</p></div>
+   <div>${wrapperSVG(w)}</div>
+   <table>${LEVELS.map((L,i)=>{const [a,m]=levelPts(i);return `<tr><td>0${i+1} · ${esc(L.t)}</td><td>${a} / ${m}</td></tr>`;}).join("")}
+    <tr class="tot"><td>Auto score (Levels 1–5)</td><td>${t} / ${AUTO}</td></tr><tr><td>06 · Brand Studio (teacher)</td><td>___ / ${TEACHER}</td></tr><tr class="tot"><td>Final</td><td>___ / 100</td></tr></table>
+   <dl class="spec"><dt>Personality</dt><dd>${w.traits.map(i=>TRAITS[i]).join(", ")}</dd><dt>Colours</dt><dd>${COLS[w.main][1]} and ${COLS[w.accent][1]}</dd><dt>Logo</dt><dd>${ICONS[w.icon][0]}, ${SHAPES[w.shape][0].toLowerCase()}, ${FONTS[w.font][0].toLowerCase()} font</dd><dt>Slogan</dt><dd>${esc(w.slogan)}</dd><dt>Why it fits</dt><dd>${esc(w.why)}</dd></dl></div>
+  <div class="note"><b>Hand it in:</b> take a screenshot of this report, or press Copy and paste the text where your teacher asked.</div>
+  <button class="go" data-act="copy">Copy our results <span>⧉</span></button>
+  <button class="ghost" data-act="again">Play again (counts as a new attempt)</button></div>`;
+}
+function render(){
+  const app=document.getElementById("app");
+  const ae=document.activeElement,active=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")?ae.id:null;
+  const keep=active?{v:ae.value,s:ae.selectionStart,e:ae.selectionEnd}:null;
+  const v={start:vStart,intro:vIntro,item:vItem,done:vLevelDone,written:vStudio,res:vResults}[S.screen]||vStart;
+  app.innerHTML=(S.screen==="start"?"":ticker())+v();
+  if(active){const el=document.getElementById(active);if(el){el.value=keep.v;el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(err){}}}
+  const sig=S.screen+"|"+S.L+"|"+S.I+"|"+S.fb;if(sig!==window.__sig){window.__sig=sig;window.scrollTo(0,0);if(S.screen==="item"&&!S.fb){const it=LEVELS[S.L].items[S.plan[S.L].order[S.I]];startTimer(it.type==="cls"?T_CLS:T_PICK);}}
+}
+document.addEventListener("input",e=>{
+  const f=e.target.dataset.f;if(f){S[f]=e.target.value;save();const b=document.querySelector('[data-act="begin"]');if(b)b.disabled=!(S.group.trim().length>=2&&S.members.trim().length>=3);}
+  const w=e.target.dataset.st;if(w){S.studio[w]=e.target.value;save();const b=document.getElementById("finishBtn");if(b)b.disabled=!studioReady();if(w==="slogan"){const pv=document.querySelector(".preview");if(pv)pv.innerHTML=wrapperSVG(S.studio);}}
+});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  const curIdx=()=>S.plan[S.L].order[S.I];
+  switch(a){
+    case "begin":S.attempt=(S.attempt||0)+1;S.plan=makePlan();S.ans={};S.hint={};S.L=0;S.I=0;S.fb=false;S.screen="intro";break;
+    case "startlevel":S.I=0;S.fb=false;S.screen="item";break;
+    case "cls":case "pick":choose(+b.dataset.i);return;
+    case "hint":if(S.fb)return;S.hint[S.L+"_"+curIdx()]=true;save();render();return;
+    case "next":S.fb=false;if(S.I<LEVELS[S.L].items.length-1)S.I++;else S.screen="done";break;
+    case "nextlevel":if(S.L<LEVELS.length-1){S.L++;S.screen="intro";}else S.screen="written";break;
+    case "trait":{const i=+b.dataset.i,T=S.studio.traits;const k=T.indexOf(i);if(k>=0)T.splice(k,1);else if(T.length<3)T.push(i);break;}
+    case "main":S.studio.main=+b.dataset.i;if(S.studio.accent===S.studio.main)S.studio.accent=null;break;
+    case "accent":S.studio.accent=+b.dataset.i;break;
+    case "icon":S.studio.icon=+b.dataset.i;break;
+    case "shape":S.studio.shape=+b.dataset.i;break;
+    case "font":S.studio.font=+b.dataset.i;break;
+    case "finish":if(!studioReady())return;S.finished=Date.now();S.screen="res";break;
+    case "copy":{const txt=resultText();try{navigator.clipboard.writeText(txt).then(()=>{b.firstChild.textContent="Copied ✓ ";},()=>{b.firstChild.textContent="Copy didn’t work: take a screenshot ";});}catch(err){b.firstChild.textContent="Copy didn’t work: take a screenshot ";}return;}
+    case "again":{const g=S.group,m=S.members,s=S.section,att=S.attempt;S=blank();S.group=g;S.members=m;S.section=s;S.attempt=att;break;}
+  }
+  save();render();
+});
+render();
+</script>
+</body>
+</html>

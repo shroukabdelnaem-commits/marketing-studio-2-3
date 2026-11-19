@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spot It, Fix It</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manjari:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* BUS 1410 doodle template: off-white paper, navy ink, pink / yellow / green / blue stickers. One column, phone first. */
+  --paper:#FAFAFA; --ink:#222F3F; --muted:#56606E;
+  --pink:#F6497B; --yellow:#FFE599; --green:#B6D7A8; --blue:#A7D8E0; --pinksoft:#FBC2D3;
+  --body:"Manjari","Segoe UI",system-ui,sans-serif; --hand:"Patrick Hand","Comic Sans MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:19px;line-height:1.4}
+#deco{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.5}
+#app{position:relative;max-width:620px;margin:0 auto;padding:16px 16px 56px}
+h1,h2,h3{font-family:var(--body);font-weight:400;margin:0;line-height:1.15;text-wrap:balance}
+h3{font-weight:700}
+p{margin:0}
+button{font:inherit;color:var(--ink);cursor:pointer;background:#fff;border:2.5px solid var(--ink);border-radius:16px 18px 15px 19px;padding:.6em 1em}
+button:hover{background:#fff8dc}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+button.go{background:var(--yellow);font-weight:700;font-size:21px;width:100%}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=text],textarea{font:inherit;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.55em .7em;width:100%}
+textarea{min-height:90px;resize:vertical}
+label{font-weight:700}
+.hand{font-family:var(--hand)}
+.muted{color:var(--muted)} .small{font-size:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.brand{font-family:var(--hand);font-size:26px}
+.brand span{color:var(--pink)}
+.score{font-family:var(--hand);font-size:22px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:2px 14px;font-variant-numeric:tabular-nums}
+.card{background:#fff;border:2.5px solid var(--ink);border-radius:22px 26px 20px 28px;padding:16px 18px}
+.pill{align-self:flex-start;font-family:var(--hand);background:var(--yellow);padding:3px 14px;border-radius:999px;font-size:19px}
+.levels{display:grid;gap:10px}
+.lvl{display:flex;gap:14px;align-items:flex-start}
+.lvl .n{flex:none;width:44px;height:44px;border:2.5px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--hand);font-size:24px}
+.bar{height:12px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff}
+.bar i{display:block;height:100%;background:var(--pink);transition:width .3s}
+.timer{font-family:var(--hand);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.timer.late{color:#C2185B}
+.statement{font-size:28px;line-height:1.25}
+.src{font-family:var(--hand);font-size:19px;color:var(--muted)}
+.opts{display:grid;gap:12px}
+.crit{width:100%;text-align:left;font-weight:700;font-size:21px;display:flex;align-items:center;gap:12px;padding:15px 16px}
+.crit .k{flex:none;width:38px;height:38px;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--hand);font-weight:400;font-size:24px;background:#fff}
+.crit.right{outline:5px solid var(--ink);outline-offset:3px}
+.crit.dim{opacity:.4}
+.fixopt{width:100%;text-align:left;font-size:19px;padding:14px 16px}
+.fixopt.right{background:var(--green)} .fixopt.part{background:var(--yellow)} .fixopt.wrong{background:var(--pinksoft)}
+.fixopt.dim{opacity:.6}
+div.fixopt{border:2.5px solid var(--ink);border-radius:16px 18px 15px 19px;background:#fff}
+div.fixopt.right{background:var(--green)} div.fixopt.part{background:var(--yellow)} div.fixopt.wrong{background:var(--pinksoft)}
+.verdict{font-family:var(--hand);font-size:44px;line-height:1.05}
+.streak{font-family:var(--hand);font-size:20px;color:var(--pink)}
+.badge{text-align:center;border:3px solid var(--ink);border-radius:50% 46% 52% 48%;padding:28px 18px;background:var(--yellow)}
+.badge .t{font-family:var(--hand);font-size:36px;line-height:1.1}
+.results{font-variant-numeric:tabular-nums}
+.results table{border-collapse:collapse;width:100%}
+.results td{padding:7px 2px;border-bottom:1.5px dashed var(--ink);vertical-align:top}
+.results td:last-child{text-align:right;font-weight:700}
+.note{background:var(--pinksoft);border:2px solid var(--ink);border-radius:14px;padding:10px 14px;font-size:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg id="deco" aria-hidden="true" viewBox="0 0 960 540" preserveAspectRatio="xMidYMid slice"><path d="M863.1 422.3 C874.1 422.3 882.7 432.5 887.0 442.3 C887.3 443.0 887.8 443.3 888.4 443.3 C889.4 443.3 890.6 442.2 890.5 441.0 C896.8 434.0 905.7 427.7 914.8 427.7 C919.3 427.7 923.7 429.2 927.9 432.8 C941.8 444.9 928.8 460.5 920.8 471.3 C913.4 481.0 905.6 490.4 897.3 499.0 C894.0 502.5 886.2 507.0 884.3 512.0 C873.0 498.0 859.5 484.5 850.8 468.5 C850.8 468.3 850.6 467.8 850.4 467.7 C848.7 464.4 847.2 460.9 845.8 457.3 C842.0 445.5 842.8 428.8 856.2 423.6 C858.6 422.7 860.9 422.3 863.1 422.3 Z M847.3 471.0 C848.0 472.0 848.7 473.2 849.2 474.4 C853.0 478.9 856.5 484.3 860.2 489.5 C853.0 500.1 847.2 512.2 843.0 524.3 C831.4 520.7 820.1 516.0 809.9 508.7 C801.9 503.0 803.8 493.5 812.0 489.2 C814.6 487.7 817.5 487.0 820.3 487.0 C823.1 487.0 825.9 487.6 828.4 488.6 L828.4 489.2 C828.6 489.6 829.0 489.9 829.5 489.9 C829.8 489.9 830.2 489.7 830.5 489.5 C831.0 489.5 831.9 488.6 831.0 487.9 C830.9 487.8 830.9 487.8 830.7 487.8 C831.0 478.2 838.3 471.8 847.3 471.0 Z M862.7 418.5 C852.6 418.5 844.7 425.5 841.4 434.9 C837.6 446.0 840.7 457.1 845.8 467.0 C836.8 467.1 828.3 476.3 828.3 485.7 C825.6 484.3 822.6 483.6 819.7 483.6 C811.7 483.6 803.7 488.3 801.2 496.3 C798.3 505.6 805.7 510.0 812.7 514.5 C822.0 520.4 832.4 525.0 843.0 527.5 C843.1 527.5 843.2 527.5 843.3 527.5 C844.5 527.5 845.1 526.4 844.7 525.6 L844.9 525.2 C850.6 513.9 856.2 503.2 862.1 492.1 C868.7 500.6 875.8 508.4 883.7 515.2 C883.9 515.5 884.4 516.0 884.8 516.0 L885.5 516.0 C885.6 516.0 885.7 516.1 885.8 516.1 C886.5 516.1 887.1 515.6 887.7 515.2 L888.1 514.5 C888.4 513.9 888.2 513.1 888.1 512.7 C896.6 505.6 918.2 479.8 920.3 477.2 C927.8 468.5 939.4 456.4 938.0 443.7 C936.8 434.0 928.1 426.4 918.9 424.7 C917.5 424.4 916.0 424.3 914.6 424.3 C904.5 424.3 895.6 430.5 889.6 438.4 C884.6 428.5 876.5 419.5 864.5 418.6 C863.9 418.5 863.3 418.5 862.7 418.5 Z" fill="#222F3F" stroke="#222F3F" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/><path d="M885.4 83.2 C887.2 85.0 889.4 86.8 891.1 88.8 C891.6 89.8 890.2 91.0 889.2 92.2 C885.2 97.0 881.4 101.9 877.6 106.5 C877.2 107.3 878.2 108.9 879.2 109.9 C883.6 113.9 888.2 118.1 892.7 122.2 C894.1 123.2 893.7 123.6 892.7 124.4 C890.4 126.0 890.0 129.6 886.4 129.6 C884.4 129.0 882.6 128.6 881.0 125.6 C879.0 121.2 874.4 118.3 870.1 115.5 C869.9 115.4 869.7 115.3 869.5 115.3 C868.7 115.3 868.0 116.1 867.5 116.5 C863.9 122.2 857.5 126.0 854.9 132.2 C854.5 132.7 854.0 133.1 853.5 133.1 C853.2 133.1 852.8 133.0 852.4 132.6 C850.4 131.0 848.4 129.2 846.8 127.2 C845.2 125.4 847.2 123.4 848.0 123.0 C851.0 121.0 851.0 116.9 854.1 115.1 C856.1 113.9 856.3 111.3 858.3 110.1 C860.9 108.5 860.1 105.9 858.5 104.5 C854.9 101.4 853.0 96.8 848.0 95.2 C846.8 95.0 845.8 92.0 848.0 90.4 C849.2 89.8 850.4 89.0 851.2 87.4 C851.8 86.4 852.2 84.9 853.2 84.9 C853.3 84.9 853.4 85.0 853.4 85.0 C854.5 85.2 855.5 86.8 856.1 88.0 C858.9 93.0 863.3 96.4 867.3 100.0 C867.7 100.3 868.0 100.4 868.3 100.4 C869.8 100.4 871.1 98.2 871.5 97.4 C875.6 92.4 880.4 88.2 885.0 83.8 L885.4 83.2 Z M886.4 79.3 C885.4 79.3 884.4 79.8 883.6 80.5 C879.4 84.6 875.2 89.0 871.5 93.8 C870.5 95.3 869.4 96.0 868.3 96.0 C867.1 96.0 865.8 95.0 864.7 93.4 C863.1 90.6 861.3 88.2 859.5 85.6 C858.0 83.4 856.2 82.2 854.5 82.2 C853.3 82.2 852.2 82.7 851.2 83.8 C849.4 85.4 848.0 87.0 846.8 89.0 C845.0 91.8 842.4 94.4 847.0 97.8 C850.4 100.2 853.0 104.1 856.3 107.1 C857.5 108.1 857.5 107.9 856.5 109.1 C853.0 113.3 849.4 117.3 846.4 122.0 C845.4 123.4 843.2 125.0 843.4 127.4 C842.8 129.6 844.4 130.4 845.2 131.6 C848.6 134.6 850.5 136.1 852.1 136.1 C853.8 136.1 855.3 134.4 858.3 130.8 C861.5 126.8 866.7 124.8 868.7 119.5 C869.1 119.2 869.3 118.9 869.7 118.9 C869.9 118.9 870.2 119.1 870.5 119.5 C874.6 125.2 879.8 129.2 884.8 133.6 C885.4 134.2 886.3 134.9 887.0 134.9 C887.4 134.9 887.7 134.7 887.8 134.2 C888.8 132.2 890.6 131.4 892.2 130.4 C897.3 126.6 897.7 123.2 893.3 118.9 C889.4 115.5 885.6 112.5 881.8 109.3 C879.8 107.5 880.2 105.1 882.2 104.5 C884.2 104.1 884.6 102.9 884.8 101.4 C885.4 99.6 887.0 98.0 887.6 97.8 C890.8 96.4 891.6 93.0 893.7 91.0 C896.3 88.8 894.5 86.0 892.5 84.6 C890.8 83.8 889.6 82.3 888.8 81.1 C888.1 79.8 887.3 79.3 886.4 79.3 Z" fill="#222F3F"/><path d="M122.2 9.2 C119.3 9.2 116.6 10.7 116.1 14.1 C115.2 20.4 114.4 26.8 113.7 33.3 C112.8 32.9 111.9 32.8 111.0 32.8 C108.4 32.8 106.1 34.2 105.5 37.5 C104.0 46.6 102.3 55.4 100.2 64.2 C99.4 56.2 99.3 47.9 97.0 40.4 C96.0 37.3 93.3 35.7 90.5 35.7 C89.4 35.7 88.3 36.0 87.3 36.5 L87.3 26.4 C87.3 22.2 83.6 19.7 80.2 19.7 C78.0 19.7 76.0 20.7 74.9 22.7 C74.2 22.5 73.5 22.4 72.7 22.4 C69.3 22.4 65.9 24.5 65.9 28.8 C65.8 38.0 65.6 47.0 65.6 56.2 C65.6 60.1 69.3 62.9 72.9 62.9 C73.5 62.9 74.2 62.8 74.8 62.6 C75.7 67.1 78.0 70.7 82.0 73.5 C83.2 74.3 84.4 74.6 85.5 74.6 C86.6 74.6 87.6 74.3 88.6 73.8 C89.5 79.6 91.3 85.6 95.0 90.9 C96.6 93.0 98.8 94.1 100.9 94.1 C101.5 94.1 102.1 94.0 102.6 93.8 L103.3 94.9 C104.6 97.2 106.7 98.2 108.9 98.2 C111.6 98.2 114.4 96.4 115.5 93.4 C116.9 89.6 118.1 86.0 119.2 82.2 C119.3 82.2 119.4 82.2 119.5 82.2 C122.4 82.2 125.3 80.0 126.4 77.2 C127.9 72.7 129.4 68.6 130.9 64.2 C131.8 64.5 132.8 64.7 133.8 64.7 C136.1 64.7 138.4 63.7 139.8 61.7 C143.2 56.1 145.3 50.4 146.3 43.8 C146.9 40.1 145.2 37.5 142.9 36.3 C143.0 34.9 143.0 33.7 143.2 32.5 C143.6 26.8 142.7 23.3 138.1 19.8 C137.2 19.1 136.0 18.8 134.9 18.8 C132.4 18.8 129.9 20.2 128.7 22.5 C129.0 20.3 129.1 18.1 129.3 15.8 C129.6 11.6 125.8 9.2 122.2 9.2 Z" fill="#F6497B"/><path d="M123.6 5.2 C137.1 5.2 140.3 27.5 138.7 38.3 C135.6 60.6 125.9 81.6 114.6 100.8 L114.6 100.8 C96.7 84.9 78.3 66.9 67.3 45.7 C64.4 40.1 62.6 34.2 62.4 27.9 C62.0 20.4 67.1 13.5 73.7 13.5 C75.6 13.5 77.6 14.1 79.7 15.4 C89.8 21.5 94.1 32.5 98.5 42.7 C98.9 43.8 99.7 44.2 100.6 44.2 C102.2 44.2 103.9 42.9 103.9 41.2 C103.9 29.6 103.9 13.1 116.3 7.1 C119.0 5.8 121.4 5.2 123.6 5.2 Z M122.2 0.0 C118.9 0.0 115.5 0.9 112.3 2.8 C102.8 8.5 99.6 18.6 98.5 28.9 L98.5 28.9 C94.2 20.3 88.8 12.3 79.5 8.3 C77.5 7.4 75.5 7.0 73.6 7.0 C64.9 7.0 57.5 14.8 56.6 23.9 C55.1 39.1 64.9 52.8 73.3 64.2 C84.9 80.1 98.5 93.8 113.2 106.5 C113.8 107.3 114.5 107.6 115.2 107.6 C116.3 107.6 117.3 106.9 117.8 105.9 L117.8 105.9 C118.1 105.7 118.4 105.3 118.7 104.9 C127.9 89.4 136.0 73.0 140.9 55.6 C144.7 41.8 149.0 24.1 140.7 10.9 C136.5 4.2 129.5 0.0 122.2 0.0 Z" fill="#222F3F"/></svg>
+<div id="app"></div>
+<script>
+/* ================= content ================= */
+const CRIT=[{n:"Planned obsolescence",c:"#F6497B"},{n:"Materialism",c:"#FFE599"},{n:"Cultural pollution",c:"#B6D7A8"},{n:"Harm to the environment",c:"#A7D8E0"}];
+const KEY="ABCD";
+const QS=[
+ {t:"Products are “designed for the dump.”",s:"From the video",a:0,x:"Made to be thrown away quickly so we buy again."},
+ {t:"After 9/11, people were told to go shopping.",s:"From the video",a:1,x:"Buying is treated as a way of life, even a duty."},
+ {t:"Each of us is targeted with more than 3,000 ads a day.",s:"From the video",a:2,x:"A flood of ads fills our daily life."},
+ {t:"Forests are cut down and land is mined to make more stuff.",s:"From the video",a:3,x:"Taking resources faster than the planet can replace them."},
+ {t:"Last year’s shoes look “out” only because the heel style changed.",s:"From the video",a:0,x:"Changing styles so working products feel old. The video calls it perceived obsolescence; Kotler counts it as a form of planned obsolescence."},
+ {t:"Toxic flame retardants end up in our pillows, and in our bodies.",s:"From the video",a:3,x:"Toxic chemicals from production harm people and the planet."},
+ {t:"Your phone slows down right after the new model comes out.",s:"Real life",a:0,x:"Products that seem to age on purpose push us to upgrade."},
+ {t:"Billboards cover almost every bridge on the Ring Road.",s:"Real life",a:2,x:"Ads crowd our shared spaces."},
+ {t:"A White Friday ad says you deserve to treat yourself to more stuff.",s:"Real life",a:1,x:"Telling us that buying more will make us happier."},
+ {t:"Old TVs and phones are burned, releasing toxic smoke.",s:"From the video",a:3,x:"Burning waste in incinerators releases toxics such as dioxin."},
+ {t:"Your laptop can’t be upgraded, so when it gets slow you have to buy a whole new one.",s:"From the video",a:0,x:"Products designed so they can’t be updated push us to replace them."},
+ {t:"We work longer hours to afford more things, then go shopping to relax.",s:"From the video",a:1,x:"The work, watch, spend treadmill: buying as a way of life."},
+ {t:"Ads now appear on buses, in every app, and even inside elevators.",s:"Real life",a:2,x:"Ads crowd every space we use."},
+ {t:"Mines and factories pollute the water of the communities living next to them.",s:"From the video",a:3,x:"Making stuff harms the land, water and people nearby."}
+];
+const NQ=10;
+/* Every option sounds reasonable. best = real change, good for people, planet AND profit.
+   half = a real step, but it misses the main problem or the business can't survive. trap = sounds green but changes nothing or makes people buy more. */
+const CASES=[
+ {n:"Weekly Wear",p:"Fast fashion: new styles every week, so last month’s clothes feel old.",ok:[0,1],f:[
+  ["Four collections a year, clothes designed to last, and a paid repair-and-resale corner in stores","best","It tackles the real problem (clothes made to feel old fast) and still earns money from repairs and resale."],
+  ["A “Conscious Collection” made with 30% recycled polyester, promoted in a big Instagram campaign","trap","Greenwashing: a small line gets big ads while 95% of the range and the weekly drops stay the same."],
+  ["A 15% voucher for every bag of old clothes brought back, with the clothes sent for recycling","trap","Buy-more trap: the voucher only works on new clothes, so it pushes people to buy again."],
+  ["Every item switched to organic cotton, with prices doubled to cover the higher cost","half","Better for the planet, but it doesn’t stop clothes feeling old fast, and most customers can’t pay double."]]},
+ {n:"Nova Phones",p:"A new model every year, and old phones slow down after updates.",ok:[0],f:[
+  ["Six years of updates that keep phones fast, plus paid battery swaps and a care plan","best","It fixes planned obsolescence head-on and creates new income from service instead of yearly upgrades."],
+  ["A big trade-in discount every year so customers always get the newest model, with old phones recycled","trap","Buy-more trap: recycling sounds good, but the plan keeps the yearly upgrade cycle running."],
+  ["Plastic-free packaging, and factories powered fully by solar energy from next year","half","A real gain for the planet, but it misses the main problem: phones that are made to feel old."],
+  ["A new “Nova Green” model in recycled aluminium, with a tree planted for every phone sold","trap","Greenwashing: a new model plus trees for every sale still means more phones and more waste."]]},
+ {n:"Clear Spring",p:"Bottled water in single-use plastic bottles, sold everywhere.",ok:[3],f:[
+  ["Refill stations in universities and offices, a branded reusable bottle, and a small fee per refill","best","It cuts single-use plastic and keeps a business model: customers still pay Clear Spring for water."],
+  ["New labels saying “100% recyclable” and “Save the planet”, plus recycling bins near shops","trap","Greenwashing: recyclable is not recycled. The video shows recycling alone can’t fix the waste."],
+  ["Every bottle redesigned to use 30% less plastic, with the same price and taste","half","A real step, but every bottle is still used once and thrown away."],
+  ["Discounted 24-packs made from recycled plastic, so families can stock up for the month","trap","Buy-more trap: discounts on bigger packs mean more bottles bought and thrown away."]]},
+ {n:"ClickCart",p:"An online electronics store whose huge White Friday sale shouts “Buy now!”",ok:[1,2],f:[
+  ["A White Friday trade-in week: old devices collected, refurbished ones sold with a warranty","best","It keeps the big sales week and the profit, but moves customers to reuse instead of “buy more now”."],
+  ["A tree planted for every order during White Friday, shown live on a counter on the homepage","trap","Buy-more trap: more orders mean more trees, so the message is still “buy more”."],
+  ["White Friday cancelled and all advertising stopped, to stop pushing people to buy","half","It ends the pressure to buy, but losing 25% of yearly sales could sink the business."],
+  ["An “eco-friendly” filter on the website, with the countdown ads and daily emails kept","trap","Greenwashing: the “Buy now!” pressure and the flood of ads stay exactly the same."]]},
+ {n:"Pod & Co.",p:"Coffee capsules: every cup leaves one piece of aluminium waste.",ok:[3],f:[
+  ["Free collection of used capsules with the next delivery, melted down into new capsules","best","It closes the loop on the waste and keeps the capsule business and its customers."],
+  ["An ad campaign explaining that aluminium is “infinitely recyclable”, with a recycling guide","trap","Greenwashing: true on paper, but a guide changes nothing, and most capsules are never recycled."],
+  ["Compostable capsules, with “compostable” printed in big letters on every box","trap","Sounds great, but these only break down in industrial composting sites that most cities don’t have."],
+  ["Capsules dropped completely, and only bags of coffee beans sold from now on","half","Good for the planet, but it throws away the product its customers actually want."]]},
+ {n:"FunBox Toys",p:"Cheap toys in kids’ meals that break within a week.",ok:[0,3],f:[
+  ["A sturdy collectible toy series that kids can trade with each other at the restaurant","best","Toys last, kids keep coming back to collect and swap, and there is far less waste."],
+  ["Toys made from recycled plastic, with a new design every week to keep kids excited","trap","Buy-more trap: still a toy every week that breaks and gets thrown away, just in a greener material."],
+  ["Toys replaced by a free activity book printed on recycled paper, with new puzzles each month","half","Less plastic, but the books are used once and thrown away, and kids may stop asking for the meal."],
+  ["A tree planted for every kids’ meal sold, with a tree counter printed on every meal box","trap","Greenwashing: it pays for trees and sells more meals, but the toys still break in a week."]]}
+];
+const KIND={best:{pts:7,label:"Best fix",cls:"right"},half:{pts:3,label:"Half right",cls:"part"},trap:{pts:0,label:"Trap",cls:"wrong"}};
+const QSEC=20, PTS_Q=2, PTS_CRIT=3;
+const AUTO=NQ*PTS_Q+CASES.length*(PTS_CRIT+KIND.best.pts); /* 20 + 60 = 80 */
+const TEACHER=20;
+
+/* ================= state ================= */
+const LS="spotfix-solo-v3";
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function blank(){return{screen:"start",name:"",group:"",q:0,qOrd:null,aOrd:null,qAns:[],qPts:[],c:0,step:"crit",cCrit:[],cFix:[],ord:null,cOrd:null,own:{c:null,change:"",slogan:""},attempt:0,started:null,finished:null};}
+let S=blank();
+try{const r=lsGet(LS);if(r)S=Object.assign(blank(),JSON.parse(r));}catch(e){}
+function save(){lsSet(LS,JSON.stringify(S));}
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function total(){return S.qPts.reduce((a,b)=>a+(b||0),0)+S.cCrit.reduce((a,v,i)=>a+(v!=null&&CASES[i].ok.includes(v)?PTS_CRIT:0),0)+S.cFix.reduce((a,v,i)=>a+(v!=null?KIND[CASES[i].f[v][1]].pts:0),0);}
+function shuffle(n){const a=Array.from({length:n},(_,i)=>i);for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const curQ=k=>QS[S.qOrd[k]];
+const qRight=k=>S.qAns[k]!=null&&S.qAns[k]===curQ(k).a;
+function streak(){let n=0;for(let i=S.qAns.length-1;i>=0;i--){if(qRight(i))n++;else break;}return n;}
+
+/* ================= timer ================= */
+let tStart=0,tIv=null;
+function startTimer(){tStart=Date.now();clearInterval(tIv);tIv=setInterval(()=>{const left=QSEC-(Date.now()-tStart)/1000;const el=document.getElementById("tm");
+  if(el){el.textContent=Math.max(0,Math.ceil(left));el.classList.toggle("late",left<=5);}
+  const b=document.getElementById("tb");if(b)b.style.width=Math.max(0,left/QSEC*100)+"%";
+  if(left<=0){clearInterval(tIv);answer(null);}},200);}
+function answer(i){
+  if(S.screen!=="q")return;clearInterval(tIv);
+  const left=Math.max(0,QSEC-(Date.now()-tStart)/1000);
+  const ok=i===curQ(S.q).a;S.qAns[S.q]=i;S.qPts[S.q]=ok?PTS_Q:0;
+  S.screen="qfb";save();render();
+}
+
+/* ================= screens ================= */
+const head=()=>`<div class="top"><div class="brand">Spot It, <span>Fix It</span></div>${S.screen!=="start"?`<div class="score" aria-label="Your points">${total()} / ${AUTO}</div>`:""}</div>`;
+function crit(i,cls,act,pos){return `<button class="crit ${cls||""}" style="background:${CRIT[i].c}" ${act||""}><span class="k">${KEY[pos==null?i:pos]}</span><span>${CRIT[i].n}</span></button>`;}
+function prog(done,of){return `<div class="bar" aria-hidden="true"><i style="width:${done/of*100}%"></i></div>`;}
+function vStart(){
+  return `<div class="stack"><span class="pill">BUS 1410 · Introduction to Marketing</span>
+  <h1 style="font-size:40px">Spot It, Fix It</h1>
+  <p>A game about <i>The Story of Stuff</i> and Chapter 3, marked out of 100. Play on your own. At the end you’ll get a results card to hand in.</p>
+  <div class="card levels">
+   <div class="lvl"><div class="n">1</div><div><h3>Spot it</h3><p class="small">10 statements, 20 seconds each, in a random order. Which criticism of marketing is it? 2 points each.</p></div></div>
+   <div class="lvl"><div class="n">2</div><div><h3>Fix it</h3><p class="small">6 companies. Name the problem (3 points), then find the best fix among four (up to 7 points). Careful: every option sounds good.</p></div></div>
+   <div class="lvl"><div class="n">3</div><div><h3>Your turn</h3><p class="small">Write your own fix and slogan. Your teacher grades it out of 20.</p></div></div>
+  </div>
+  <div class="stack" style="gap:8px"><label for="nm">Your full name</label><input type="text" id="nm" data-f="name" maxlength="60" value="${esc(S.name)}" autocomplete="name">
+   <label for="gp">Student ID or section <span class="muted" style="font-weight:400">(optional)</span></label><input type="text" id="gp" data-f="group" maxlength="40" value="${esc(S.group)}"></div>
+  <button class="go" data-act="begin" ${S.name.trim().length<3?"disabled":""}>Start the game</button></div>`;
+}
+function vLevel(n,title,text,btn,act){return `<div class="stack" style="text-align:center;padding-top:40px"><div class="hand" style="font-size:26px">Level ${n}</div><h1 style="font-size:46px">${title}</h1><p>${text}</p><button class="go" data-act="${act}">${btn}</button></div>`;}
+function vQ(){
+  const Q=curQ(S.q);const st=streak();const ao=S.aOrd[S.q];
+  return `<div class="stack"><div class="row" style="justify-content:space-between"><span class="pill">Level 1 · ${S.q+1} of ${NQ}</span>${st>=2?`<span class="streak">Streak × ${st}</span>`:""}<span class="timer" id="tm">${QSEC}</span></div>
+  <div class="bar" aria-hidden="true"><i id="tb" style="width:100%"></i></div>
+  <p class="src">${esc(Q.s)}</p><h2 class="statement">${esc(Q.t)}</h2><p class="muted small">Which criticism of marketing is this?</p>
+  <div class="opts">${ao.map((i,p)=>crit(i,"",`data-act="ans" data-i="${i}"`,p)).join("")}</div></div>`;
+}
+function vQfb(){
+  const Q=curQ(S.q);const a=S.qAns[S.q];const ok=a===Q.a;const pts=S.qPts[S.q];const ao=S.aOrd[S.q];
+  return `<div class="stack"><span class="pill">Level 1 · ${S.q+1} of ${NQ}</span>
+  <div class="verdict">${ok?`Yes! +${pts}`:(a==null?"Time’s up!":"Not this one")}</div>
+  <h2 class="statement" style="font-size:22px">${esc(Q.t)}</h2>
+  <div class="opts">${ao.map((i,p)=>crit(i,i===Q.a?"right":"dim",'tabindex="-1" aria-disabled="true"',p)).join("")}</div>
+  <div class="card"><b>${CRIT[Q.a].n}.</b> ${esc(Q.x)}</div>
+  <button class="go" data-act="nextq">${S.q<NQ-1?"Next statement →":"Finish Level 1 →"}</button></div>`;
+}
+function vCase(){
+  const C=CASES[S.c];const cv=S.cCrit[S.c];const fv=S.cFix[S.c];
+  let body=`<div class="card"><p class="small muted">Company ${S.c+1} of ${CASES.length}</p><h3 style="font-size:26px">${esc(C.n)}</h3><p style="margin-top:4px">${esc(C.p)}</p></div>`;
+  if(S.step==="crit"){
+    body+=`<b>Step 1: Which criticism does this company show?</b><div class="opts">${S.cOrd[S.c].map((i,p)=>crit(i,"",`data-act="ccrit" data-i="${i}"`,p)).join("")}</div>`;
+  }else if(S.step==="critfb"){
+    const ok=C.ok.includes(cv);
+    body+=`<div class="verdict" style="font-size:34px">${ok?`Right! +${PTS_CRIT}`:"Not quite +0"}</div>
+     <p>${ok?"You named it.":`This company mostly shows <b>${C.ok.map(i=>CRIT[i].n).join("</b> or <b>")}</b>.`}</p>
+     <button class="go" data-act="tofix">Step 2: pick the best fix →</button>`;
+  }else if(S.step==="fix"){
+    const ord=S.ord[S.c];
+    body+=`<b>Step 2: Which fix is best for people, the planet <i>and</i> profit?</b><p class="small muted">Only one is the best fix. Some are traps: they sound green but change nothing, or make people buy more.</p><div class="opts">${ord.map(i=>`<button class="fixopt" data-act="cfix" data-i="${i}">${esc(C.f[i][0])}</button>`).join("")}</div>`;
+  }else{
+    const kind=C.f[fv][1];const ord=S.ord[S.c];
+    body+=`<div class="verdict" style="font-size:34px">${kind==="best"?`Best fix! +${KIND.best.pts}`:kind==="half"?`Half right +${KIND.half.pts}`:"It’s a trap! +0"}</div>
+     <div class="opts">${ord.map(i=>{const f=C.f[i];return `<div class="fixopt ${KIND[f[1]].cls} ${i===fv||f[1]==="best"?"":"dim"}"><p class="small"><b>${KIND[f[1]].label}${i===fv?" · your pick":""}</b></p><p>${esc(f[0])}</p><p class="small" style="margin-top:6px">${esc(f[2])}</p></div>`;}).join("")}</div>
+     <button class="go" data-act="nextcase">${S.c<CASES.length-1?"Next company →":"Finish Level 2 →"}</button>`;
+  }
+  return `<div class="stack"><span class="pill">Level 2 · Fix it</span>${prog(S.c+(S.step==="fixfb"?1:0),CASES.length)}${body}</div>`;
+}
+function vOwn(){
+  const o=S.own;const ready=o.c!=null&&o.change.trim().length>=10&&o.slogan.trim().length>=3;
+  return `<div class="stack"><span class="pill">Level 3 · Your turn</span><h2 style="font-size:30px">Write your own fix</h2>
+  <p class="small muted">Pick any company. Don’t copy the options from Level 2: make up your own idea.</p><div class="card small"><b>Graded out of 20:</b> tackles the company’s real problem (5) · a real change, not greenwashing or a buy-more trap (10) · a slogan that fits (5)</div>
+  <div class="opts">${CASES.map((C,i)=>`<button class="fixopt ${o.c===i?"part":""}" data-act="ownc" data-i="${i}" aria-pressed="${o.c===i}"><b>${esc(C.n)}</b> · <span class="small">${esc(C.p)}</span></button>`).join("")}</div>
+  <label for="chg">One change to the product or the promotion</label><textarea id="chg" data-own="change" maxlength="300">${esc(o.change)}</textarea>
+  <label for="slg">A new slogan</label><input type="text" id="slg" data-own="slogan" maxlength="80" value="${esc(o.slogan)}">
+  <button class="go" data-act="finish" id="finishBtn" ${ready?"":"disabled"}>See my results →</button></div>`;
+}
+function badge(t){const pct=t/AUTO;return pct>=.8?"Sustainable Marketer":pct>=.55?"Marketing Pro":"Rookie Marketer";}
+function resultText(){
+  const t=total();const l1=S.qAns.filter((a,i)=>qRight(i)).length;const l2c=S.cCrit.filter((v,i)=>CASES[i].ok.includes(v)).length;const l2f=S.cFix.filter((v,i)=>v!=null&&CASES[i].f[v][1]==="best").length;
+  const d=new Date(S.finished||Date.now());
+  return [`SPOT IT, FIX IT · BUS 1410`,`Name: ${S.name}`,S.group?`ID / section: ${S.group}`:null,`Finished: ${d.toLocaleString()}`,`Attempt: ${S.attempt}`,
+   `Level 1 (Spot it): ${l1}/10 correct`,`Level 2 (Fix it): ${l2c}/6 problems named, ${l2f}/6 best fixes`,`Auto score (Levels 1–2): ${t} / ${AUTO}`,`Level 3 (teacher): ___ / ${TEACHER}`,`Final: ___ / 100`,
+   `Level 3 company: ${CASES[S.own.c].n}`,`Level 3 change: ${S.own.change.trim()}`,`Level 3 slogan: ${S.own.slogan.trim()}`].filter(Boolean).join("\n");
+}
+function vResults(){
+  const t=total();const l1=S.qAns.filter((a,i)=>qRight(i)).length;const l2c=S.cCrit.filter((v,i)=>CASES[i].ok.includes(v)).length;const l2f=S.cFix.filter((v,i)=>v!=null&&CASES[i].f[v][1]==="best").length;
+  const d=new Date(S.finished);
+  return `<div class="stack"><div class="badge"><p class="small">${esc(S.name)}</p><div class="t">${badge(t)}</div><p class="hand" style="font-size:30px;margin-top:6px">${t} / ${AUTO}</p><p class="small">Level 3 is marked by your teacher out of 20</p></div>
+  <div class="card results"><h3 style="margin-bottom:6px">Results card</h3><table>
+   <tr><td>Name</td><td>${esc(S.name)}</td></tr>${S.group?`<tr><td>ID / section</td><td>${esc(S.group)}</td></tr>`:""}
+   <tr><td>Finished</td><td>${esc(d.toLocaleString())}</td></tr><tr><td>Attempt</td><td>${S.attempt}</td></tr>
+   <tr><td>Level 1: right answers</td><td>${l1} / 10</td></tr><tr><td>Level 2: problems named</td><td>${l2c} / 6</td></tr><tr><td>Level 2: best fixes</td><td>${l2f} / 6</td></tr>
+   <tr><td>Auto score (Levels 1–2)</td><td>${t} / ${AUTO}</td></tr><tr><td>Level 3 (teacher)</td><td>___ / ${TEACHER}</td></tr><tr><td>Final</td><td>___ / 100</td></tr></table>
+   <div style="margin-top:12px"><p class="small muted">Level 3 · ${esc(CASES[S.own.c].n)}</p><p><b>Change:</b> ${esc(S.own.change)}</p><p class="hand" style="font-size:24px">“${esc(S.own.slogan)}”</p></div></div>
+  <div class="note"><b>Hand it in:</b> take a screenshot of this card, or press Copy and paste the text where your teacher asked.</div>
+  <button class="go" data-act="copy" id="copyBtn">Copy my results</button>
+  <button data-act="again" id="againBtn" class="small">Play again (counts as a new attempt)</button></div>`;
+}
+function render(){
+  const app=document.getElementById("app");
+  const ae=document.activeElement,active=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")?ae.id:null;
+  const keep=active?{v:ae.value,s:ae.selectionStart,e:ae.selectionEnd}:null;
+  const v={start:vStart,l1:()=>vLevel(1,"Spot it","10 statements. Tap the criticism of marketing each one shows. 20 seconds each, 2 points for every right answer.","I’m ready","goq"),
+    q:vQ,qfb:vQfb,l2:()=>vLevel(2,"Fix it","Six companies. For each: name its problem (3 points), then pick the best fix out of four (7 points, or 3 if half right). Every option sounds good. Look for the one that fixes the real problem, is good for people and the planet, and still makes money.","Let’s fix them","goc"),
+    c:vCase,l3:()=>vLevel(3,"Your turn","Choose one company and write your own fix and slogan. Your teacher grades it out of 20.","Write my fix","goown"),own:vOwn,res:vResults}[S.screen]||vStart;
+  app.innerHTML=head()+v();
+  if(active){const el=document.getElementById(active);if(el){el.value=keep.v;el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(err){}}}
+  if(S.screen==="q")startTimer();
+  window.scrollTo(0,0);
+}
+document.addEventListener("input",e=>{
+  const f=e.target.dataset.f;if(f){S[f]=e.target.value;save();const b=document.querySelector('[data-act="begin"]');if(b)b.disabled=S.name.trim().length<3;}
+  const o=e.target.dataset.own;if(o){S.own[o]=e.target.value;save();const b=document.getElementById("finishBtn");if(b)b.disabled=!(S.own.c!=null&&S.own.change.trim().length>=10&&S.own.slogan.trim().length>=3);}
+});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  switch(a){
+    case "begin":S.attempt=(S.attempt||0)+1;S.started=Date.now();S.screen="l1";break;
+    case "goq":S.q=0;S.qOrd=shuffle(QS.length).slice(0,NQ);S.aOrd=Array.from({length:NQ},()=>shuffle(4));S.qAns=[];S.qPts=[];S.screen="q";break;
+    case "ans":answer(+b.dataset.i);return;
+    case "nextq":if(S.q<NQ-1){S.q++;S.screen="q";}else S.screen="l2";break;
+    case "goc":S.c=0;S.step="crit";S.screen="c";S.ord=CASES.map(C=>shuffle(C.f.length));S.cOrd=CASES.map(()=>shuffle(4));break;
+    case "ccrit":S.cCrit[S.c]=+b.dataset.i;S.step="critfb";break;
+    case "tofix":S.step="fix";break;
+    case "cfix":S.cFix[S.c]=+b.dataset.i;S.step="fixfb";break;
+    case "nextcase":if(S.c<CASES.length-1){S.c++;S.step="crit";}else S.screen="l3";break;
+    case "goown":S.screen="own";break;
+    case "ownc":S.own.c=+b.dataset.i;break;
+    case "finish":S.finished=Date.now();S.screen="res";break;
+    case "copy":{const txt=resultText();const done=()=>{b.textContent="Copied ✓";};
+      try{navigator.clipboard.writeText(txt).then(done,()=>{b.textContent="Copy didn’t work: take a screenshot instead";});}catch(err){b.textContent="Copy didn’t work: take a screenshot instead";}
+      return;}
+    case "again":{const keepName=S.name,keepGroup=S.group,att=S.attempt;S=blank();S.name=keepName;S.group=keepGroup;S.attempt=att;break;}
+  }
+  save();render();
+});
+render();
+</script>
+</body>
+</html>

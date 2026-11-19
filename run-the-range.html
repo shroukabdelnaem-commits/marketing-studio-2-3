@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run the Range</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700;6..12,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Direction: the shop floor. Cobalt store wall, white price tags with punched holes, chunky shop-sign lettering,
+     and stickers slapped on every answer (SOLD! / 50% OFF / RETURNED). The till receipt is the final report. Single theme by design. */
+  --wall:#2340D8; --wall2:#1A31B0; --tag:#FFFFFF; --ink:#10142B; --muted:#5A6077;
+  --orange:#FF7A1A; --green:#1FAE5B; --red:#F23D5E; --yellow:#FFE14D; --sky:#BFD3FF;
+  --sign:"Lilita One","Arial Black",system-ui,sans-serif; --body:"Nunito Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--wall);background-image:radial-gradient(rgba(255,255,255,.07) 1.5px,transparent 1.6px);background-size:22px 22px;color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.45}
+#app{max-width:680px;margin:0 auto;padding:0 16px 70px}
+h1,h2,h3{margin:0;line-height:1.05;text-wrap:balance}
+h1,h2{font-family:var(--sign);font-weight:400;letter-spacing:.01em}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:var(--tag);border-radius:14px;padding:.7em 1em}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:4px solid var(--yellow);outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=text],textarea{font:inherit;color:var(--ink);background:#F3F5FF;border:2px solid #CDD5F5;border-radius:12px;padding:.6em .8em;width:100%}
+textarea{min-height:100px;resize:vertical}
+label{font-weight:700}
+.muted{color:var(--muted)} .small{font-size:15px}
+.onwall{color:#fff}
+.onwall .muted{color:var(--sky)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.go{width:100%;background:var(--orange);color:var(--ink);font-family:var(--sign);font-size:24px;padding:16px;border-radius:16px;box-shadow:0 6px 0 #B9520B;transition:transform .1s,box-shadow .1s}
+.go:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #B9520B}
+.ghost{background:transparent;color:#fff;border:2px dashed rgba(255,255,255,.6);font-size:15px}
+/* basket bar */
+.basket{position:sticky;top:0;z-index:5;margin:0 -16px 18px;padding:10px 16px;background:var(--wall2);display:flex;align-items:center;gap:12px;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.basket .logo{font-family:var(--sign);font-size:22px;letter-spacing:.02em}
+.basket .total{margin-left:auto;background:#fff;color:var(--ink);border-radius:999px;padding:4px 14px;font-weight:900;font-variant-numeric:tabular-nums;font-size:18px;white-space:nowrap}
+.basket .total small{font-weight:700;font-size:12px;color:var(--muted);margin-left:3px}
+@media (max-width:460px){.basket .blabel{display:none}.basket .total{font-size:16px;padding:4px 10px}}
+.basket .delta{background:var(--green);color:#fff;border-radius:999px;padding:3px 10px;font-weight:900;font-size:14px;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.basket .delta{animation:pop .4s cubic-bezier(.2,1.6,.4,1) both}}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+/* tags & cards */
+.card{background:var(--tag);color:var(--ink);border-radius:18px;padding:18px;box-shadow:0 6px 0 rgba(0,0,0,.18)}
+.receipt{background:#FFFDF7;padding:20px 20px 30px;position:relative;box-shadow:0 6px 0 rgba(0,0,0,.18);
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/20px 51% repeat-x,linear-gradient(#000 0 0) top/100% 50% no-repeat;
+  mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/20px 51% repeat-x,linear-gradient(#000 0 0) top/100% 50% no-repeat}
+.receipt .line{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1.5px dotted #B9BED0;font-variant-numeric:tabular-nums}
+.receipt .line b{text-align:right}
+.receipt .line span{flex:none;max-width:55%}
+.receipt .line.tot{border-bottom:3px double var(--ink);font-weight:900;font-size:20px}
+.receipt h3{font-family:var(--sign);font-weight:400;font-size:24px;text-align:center}
+/* start */
+.sign{display:inline-block;background:var(--yellow);color:var(--ink);font-family:var(--sign);font-size:18px;padding:4px 14px;border-radius:8px;transform:rotate(-3deg)}
+.hero{padding:26px 0 4px}
+.hero h1{font-size:clamp(54px,14vw,96px);color:#fff;line-height:.9;text-shadow:0 6px 0 var(--wall2),0 7px 0 rgba(0,0,0,.25)}
+.hero h1 span{color:var(--yellow)}
+.aisles{display:grid;gap:10px}
+.aisle{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 14px;color:#fff}
+.aisle .n{font-family:var(--sign);font-size:15px;background:#fff;color:var(--wall);border-radius:8px;padding:4px 8px;white-space:nowrap}
+.aisle h3{font-weight:900;font-size:17px}
+.aisle .p{font-weight:900;font-size:14px;color:var(--yellow);white-space:nowrap}
+/* intro */
+.hang{align-self:center;text-align:center;background:#fff;border-radius:14px;padding:12px 26px 16px;position:relative;margin-top:44px;transform:rotate(-2deg);box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.hang:before,.hang:after{content:"";position:absolute;top:-44px;width:3px;height:46px;background:#fff;opacity:.8}
+.hang:before{left:22%;transform:rotate(8deg)} .hang:after{right:22%;transform:rotate(-8deg)}
+.hang .a{font-family:var(--sign);color:var(--wall);font-size:20px}
+.hang h2{font-size:clamp(34px,8vw,52px)}
+/* question */
+.qtop{display:flex;align-items:center;gap:12px;color:#fff}
+.dots{display:flex;gap:6px;flex:1}
+.dots i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.3)}
+.dots i.done{background:#fff} .dots i.now{background:var(--yellow);box-shadow:0 0 0 3px rgba(255,225,77,.35)}
+.clock{font-family:var(--sign);font-size:26px;background:#fff;color:var(--ink);border-radius:12px;padding:2px 12px;font-variant-numeric:tabular-nums;min-width:74px;text-align:center}
+.clock.late{background:var(--red);color:#fff}
+.tbar{height:6px;border-radius:6px;background:rgba(255,255,255,.25);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--yellow)}
+.ask{font-weight:900;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--sky)}
+.q{font-family:var(--body);font-weight:900;font-size:clamp(22px,5.4vw,30px);line-height:1.22;color:#fff}
+.tags{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.tags{grid-template-columns:1fr}}
+.ptag{position:relative;display:flex;align-items:center;gap:14px;text-align:left;padding:16px 16px 16px 44px;border-radius:10px 16px 16px 10px;background:#fff;box-shadow:0 5px 0 rgba(0,0,0,.2);transition:transform .12s,box-shadow .12s;min-height:68px}
+.ptag:before{content:"";position:absolute;left:14px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--wall);box-shadow:inset 0 2px 0 rgba(0,0,0,.25)}
+.ptag .stripe{position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:10px 0 0 10px}
+.ptag b{font-weight:900;font-size:18px;line-height:1.2}
+.ptag .k{margin-left:auto;font-family:var(--sign);font-size:18px;color:var(--muted)}
+.ptag:hover:not([aria-disabled]){transform:translateY(-3px) rotate(-.6deg);box-shadow:0 8px 0 rgba(0,0,0,.2)}
+.ptag.right{box-shadow:0 0 0 4px var(--green),0 5px 0 rgba(0,0,0,.2)}
+.ptag.dim{opacity:.4}
+.opts{display:grid;gap:12px}
+.opt{position:relative;display:grid;grid-template-columns:36px 1fr;gap:10px;text-align:left;padding:16px;border-radius:16px;background:#fff;box-shadow:0 5px 0 rgba(0,0,0,.2);transition:transform .12s}
+.opt:hover{transform:translateY(-3px)}
+.opt .l{font-family:var(--sign);font-size:22px;color:var(--wall)}
+.deal{align-self:flex-start;background:var(--yellow);color:var(--ink);font-family:var(--sign);font-size:17px;padding:4px 12px;border-radius:8px;transform:rotate(-2deg)}
+.coupon{align-self:flex-start;background:transparent;color:#fff;border:2px dashed #fff;border-radius:10px;font-weight:700;font-size:14px;padding:7px 12px}
+.hint{background:#fff;border:2px dashed var(--orange);border-radius:14px;padding:10px 14px;font-size:15px}
+/* feedback */
+.fb{display:flex;align-items:center;gap:16px;min-height:120px}
+.sticker{flex:none;width:118px;height:118px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--sign);font-size:22px;line-height:1;color:#fff;transform:rotate(-12deg);box-shadow:0 6px 0 rgba(0,0,0,.25);border:4px dashed rgba(255,255,255,.7)}
+.sticker.ok{background:var(--green)} .sticker.half{background:var(--yellow);color:var(--ink);border-color:rgba(16,20,43,.35)} .sticker.no{background:var(--red)}
+@media (prefers-reduced-motion:no-preference){.sticker{animation:slap .42s cubic-bezier(.2,1.6,.4,1) both}}
+@keyframes slap{from{transform:rotate(-40deg) scale(2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+.fb .gain{color:#fff;font-weight:700}
+.fb .gain b{font-size:22px;font-weight:900;color:var(--yellow)}
+.why{background:#fff;border-radius:16px;padding:14px 16px}
+.fbopt{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:14px 16px;border-radius:16px;background:#fff;border:3px solid transparent}
+.fbopt.best{border-color:var(--green)} .fbopt.half{border-color:var(--yellow)} .fbopt.trap{border-color:var(--red)}
+.fbopt.dim{opacity:.62}
+.fbopt .l{font-family:var(--sign);font-size:22px;color:var(--wall)}
+.fbopt .k{font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.fbopt.best .k{color:var(--green)} .fbopt.half .k{color:#9A7A00} .fbopt.trap .k{color:var(--red)}
+/* plan */
+.sec{background:#fff;border-radius:18px;padding:16px;box-shadow:0 6px 0 rgba(0,0,0,.18);display:flex;flex-direction:column;gap:10px}
+.sec h3{font-weight:900;font-size:18px;display:flex;gap:10px;align-items:baseline}
+.sec h3 span{font-family:var(--sign);font-weight:400;color:var(--wall);font-size:20px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choices button{background:#F3F5FF;border:2px solid #CDD5F5;font-weight:700;font-size:15px;padding:10px}
+.choices button.on{background:var(--yellow);border-color:var(--ink)}
+.barcode{display:block;margin:14px auto 0}
+.rank{display:inline-block;background:var(--yellow);font-family:var(--sign);font-size:20px;padding:4px 14px;border-radius:8px;transform:rotate(-2deg)}
+.note{background:rgba(255,255,255,.12);border:2px dashed rgba(255,255,255,.5);color:#fff;border-radius:14px;padding:10px 14px;font-size:15px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LEVELS=[
+ {t:"Peel the product",ask:"Which product level is this?",step:"Three levels of a product",
+  intro:"Rova is back. Mariam and Omar want to understand what customers are really buying when they buy a Rova sneaker.",
+  hint:"Core benefit: WHY the customer buys (the need it solves). Actual product: what they hold (features, design, quality, brand name, packaging). Augmented product: the extras around it (warranty, delivery, after-sales service).",
+  cats:["Core benefit","Actual product","Augmented product"],
+  items:[
+   {type:"cls",q:"Being able to walk all day in comfort",a:0,x:"The need the sneaker solves: the core benefit."},
+   {type:"cls",q:"The recycled rubber sole and the wave logo on the side",a:1,x:"Features and brand elements you can see and hold: the actual product."},
+   {type:"cls",q:"Free sole repairs for life",a:2,x:"An extra service around the shoe: the augmented product."},
+   {type:"cls",q:"The shoebox and the way it opens",a:1,x:"Packaging belongs to the actual product, even though it isn’t the shoe itself."},
+   {type:"cls",q:"Free delivery and 60-day returns",a:2,x:"Extras that surround the purchase: the augmented product."},
+   {type:"pick",pts:6,q:"Every sneaker brand promises comfort: they all share the same core benefit. Where should Rova compete to stand out?",o:[
+    ["Give every buyer a free foot scan in store and a custom insole that fits them","best","Rova competes on the augmented level, with something rivals don’t offer and can’t copy overnight."],
+    ["Launch the same sneaker in four new colours","half","A change to the actual product helps a little, but colours are easy for rivals to copy."],
+    ["Run ads saying Rova sneakers are really comfortable","trap","Comfort is the core benefit every brand already claims, so it doesn’t make Rova different."],
+    ["Cut the price by 40%","trap","Price isn’t a product level, and a big cut can damage the brand’s value."]]}]},
+ {t:"What kind of product?",ask:"What kind of product is this for the buyer?",step:"Classifying products",
+  intro:"The same shop sells very different products. Think about how customers buy each one, not what it is.",
+  hint:"Convenience: bought often, quickly, little comparison. Shopping: bought less often; people compare price, quality and style. Specialty: unique or strong brands; people make a special effort and accept no substitute. Unsought: people don’t know about it or don’t normally think of buying it.",
+  cats:["Convenience","Shopping","Specialty","Unsought"],
+  items:[
+   {type:"cls",q:"Shoelaces sold next to the till at a sports shop",a:0,x:"Cheap, bought quickly, no comparison: convenience."},
+   {type:"cls",q:"A student compares Rova and two other brands online for a week before buying a pair",a:1,x:"The buyer compares price, quality and style first: shopping."},
+   {type:"cls",q:"A collector queues all night for a limited Rova × streetwear drop and won’t accept any other shoe",a:2,x:"A special effort and no substitute: specialty."},
+   {type:"cls",q:"Insurance that pays out if your sneakers are stolen",a:3,x:"Most people never think of buying it until someone sells it to them: unsought."},
+   {type:"cls",q:"Shoe-cleaning wipes bought at a kiosk on the way to class",a:0,x:"Bought on the spot, with little thought: convenience."},
+   {type:"pick",pts:6,tag:"Tricky one",note:"Only one answer is fully right.",q:"Rova buys 300 new sewing machines for its factory. What kind of product are they for Rova?",o:[
+    ["A capital item: an industrial product that helps Rova produce","best","Machines help the business make its products, but they don’t become part of the shoe."],
+    ["Materials and parts","trap","Materials and parts become part of the final product, like rubber or laces. The machines don’t end up inside the shoe."],
+    ["Supplies and services","trap","Supplies keep the business running day to day, like cleaning or printer paper. Machines are bigger, long-term items."],
+    ["A shopping product, because Rova compares prices first","half","Rova does compare prices, but a business buying for production makes it an industrial product, not a consumer one."]]}]},
+ {t:"Shape the mix",ask:"Which part of the product mix is this about?",step:"Product mix",
+  intro:"Rova’s range is growing. Each move changes Rova’s product mix in a different way, so read each one carefully.",
+  hint:"Width = number of product lines. Length = total number of items across all lines. Depth = versions of each item (sizes, colours). Consistency = how closely the lines are related in use, production or distribution.",
+  cats:["Width","Length","Depth","Consistency"],
+  items:[
+   {type:"cls",q:"Rova adds three new colours and half sizes to its 2,000 EGP runner.",a:2,x:"More versions of the same item: depth."},
+   {type:"cls",q:"Rova adds a new trail-running model to its sneaker line.",a:1,x:"A new item inside an existing line: length."},
+   {type:"cls",q:"Rova starts selling backpacks and gym bags, a whole new product line.",a:0,x:"A new line: width."},
+   {type:"cls",q:"All of Rova’s lines (sneakers, sports socks, shoe-care kits) are used together and sold in the same sports shops.",a:3,x:"How closely the lines fit together: consistency."},
+   {type:"pick",pts:4,tag:"Work it out",note:"Only one answer is correct.",q:"Rova now sells: Sneakers (runner, high-top, kids’ sneaker), Bags (backpack, gym bag) and Socks (one 3-pack). What is the WIDTH of Rova’s product mix?",o:[
+    ["3","best","Width counts product lines: sneakers, bags and socks."],
+    ["6","trap","6 is the length: the total number of items across all lines."],
+    ["2","trap","Socks are a line of their own, even with only one item."],
+    ["1","trap","Rova sells more than one line now."]]},
+   {type:"pick",pts:4,tag:"Work it out",note:"Only one answer is correct.",q:"Rova decides to add a line of phone cases. What happens to its product mix?",o:[
+    ["Width goes up, and consistency goes down","best","A new line adds width, but phone cases have little to do with shoes, bags and socks."],
+    ["Width goes up, and consistency goes up","trap","More lines, yes, but the new line is far from the others, so consistency falls."],
+    ["Only the depth changes","trap","Depth is about versions of each item, like sizes or colours. A whole new line changes the width."],
+    ["Nothing changes, because phone cases are cheap","trap","Price doesn’t matter: any new line changes the width of the mix."]]}]},
+ {t:"Sell the service",ask:"Which service characteristic is this?",step:"Services marketing",
+  intro:"Rova opens “Rova Fix” corners in its stores: sole repairs and custom fitting. Selling a service is different from selling a shoe.",
+  hint:"Intangibility: you can’t see or test it before you buy. Inseparability: the service can’t be separated from the person giving it. Variability: quality depends on who, when, where and how. Perishability: it can’t be stored for later.",
+  cats:["Intangibility","Inseparability","Variability","Perishability"],
+  items:[
+   {type:"cls",q:"Customers can’t see how good a repair will be before they hand over their shoes.",a:0,x:"You can’t test a service before you buy it: intangibility."},
+   {type:"cls",q:"The same repair is excellent in the Cairo store and poor in the Alexandria store.",a:2,x:"Quality changes with who does it and where: variability."},
+   {type:"cls",q:"An empty 4 pm fitting slot can never be sold again.",a:3,x:"A service can’t be stored for later: perishability."},
+   {type:"cls",q:"Customers only trust Hany, the fitter who measured their feet last time.",a:1,x:"The service and the person giving it can’t be separated: inseparability."},
+   {type:"pick",pts:8,q:"Repair quality is very different from store to store, and customers are complaining online. What should Rova do?",o:[
+    ["Train every fitter with the same 10-step checklist, and check each repair before it goes back","best","Variability is fixed by standardising: same training, same steps, same quality checks."],
+    ["Post before-and-after photos of the best repairs online","half","Photos make the service feel more tangible, but they don’t fix the uneven quality customers are complaining about."],
+    ["Give a 50% discount on every repair","trap","Cheaper bad repairs are still bad repairs. The quality problem stays."],
+    ["Let each store manager decide their own repair method","trap","Different methods in every store make variability even worse."]]}]},
+ {t:"The life cycle",ask:"Which life-cycle stage is this?",step:"Product life cycle",
+  intro:"Rova now has shoes at every stage of life. Look at sales, profits and rivals to place each one.",
+  hint:"Introduction: low sales, losses, high promotion. Growth: sales and profits rise, rivals arrive. Maturity: sales peak, many rivals fight for share. Decline: sales and profits fall. In maturity, a company can modify the market (new users, new uses), the product, or the marketing mix.",
+  cats:["Introduction","Growth","Maturity","Decline"],
+  items:[
+   {type:"cls",q:"Rova’s new self-lacing sneaker: few buyers, lots of explaining, big ad spending and losses.",a:0,x:"New, unfamiliar and not yet profitable: introduction."},
+   {type:"cls",q:"Rova’s runner: sales and profits rising fast, and new rivals copy it every month.",a:1,x:"Fast growth and new competitors: growth."},
+   {type:"cls",q:"Rova’s classic high-top: almost everyone who wants one has one, and brands fight with new colours and discounts.",a:2,x:"Sales at their peak and a fight for share: maturity."},
+   {type:"cls",q:"Rova’s canvas slip-on: sales and profits fall every year, and shops give it less space.",a:3,x:"Falling sales and profits: decline."},
+   {type:"pick",pts:8,q:"Rova’s classic high-top is stuck in maturity. Which move is a real “modify” strategy, like the Lucozade relaunch?",o:[
+    ["Relaunch it for a new market: a non-slip work shoe for nurses and waiters","best","New users and a new use, with a small product change: exactly how Lucozade found new life."],
+    ["Release it in two more colours","half","A small change to the product. It may help a little, but it doesn’t bring new customers or new uses."],
+    ["Cut all advertising now to save money","trap","That is a decline move (harvesting), not a way to give a mature product new life."],
+    ["Wait, and hope sales start growing again","trap","Mature products don’t grow again by themselves. Something has to change."]]}]}
+];
+
+
+const START_VALUE=2000000, PER_POINT=100000, CLS_PTS=2;
+const AUTO=LEVELS.reduce((a,L)=>a+L.items.reduce((b,it)=>b+(it.type==="cls"?CLS_PTS:it.pts),0),0);
+const TEACHER=20, KEY="ABCD";
+const STRIPES=["#FF7A1A","#1FAE5B","#F23D5E","#2340D8"];
+
+/* ================= state ================= */
+const LS="runrange-shop-v1-solo";
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function shuffle(n){const a=Array.from({length:n},(_,i)=>i);for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function blank(){return{screen:"start",group:"",members:"",section:"",L:0,I:0,fb:false,plan:null,ans:{},hint:{},studio:{idea:"",core:"",actual:"",aug:"",type:null,line:null,move:""},attempt:0,finished:null,lastGain:null};}
+let S=blank();
+try{const r=lsGet(LS);if(r)S=Object.assign(blank(),JSON.parse(r));}catch(e){}
+function save(){lsSet(LS,JSON.stringify(S));}
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function makePlan(){return LEVELS.map(L=>{const cls=L.items.map((it,i)=>i).filter(i=>L.items[i].type==="cls");const picks=L.items.map((it,i)=>i).filter(i=>L.items[i].type==="pick");
+  const s=shuffle(cls.length).map(k=>cls[k]);const order=L.items[0].type==="pick"?picks.concat(s):s.concat(picks);
+  return{order,btn:L.items.map(it=>shuffle(it.type==="cls"?L.cats.length:it.o.length))};});}
+function ptsFor(L,i,a){const it=LEVELS[L].items[i];if(a==null||a<0)return 0;let p;if(it.type==="cls")p=a===it.a?CLS_PTS:0;else{const k=it.o[a][1];p=k==="best"?it.pts:k==="half"?it.pts/2:0;}return S.hint[L+"_"+i]?Math.floor(p/2):p;}
+function total(){let t=0;for(const k in S.ans){const [L,i]=k.split("_").map(Number);t+=ptsFor(L,i,S.ans[k]);}return t;}
+function levelPts(L){let t=0,m=0;LEVELS[L].items.forEach((it,i)=>{m+=it.type==="cls"?CLS_PTS:it.pts;t+=ptsFor(L,i,S.ans[L+"_"+i]);});return[t,m];}
+const fmt=n=>n.toLocaleString("en-US");
+const value=()=>START_VALUE+PER_POINT*total();
+
+/* ================= timer ================= */
+const T_CLS=45,T_PICK=90;let tStart=0,tIv=null,tLen=0;
+const clockText=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+function startTimer(len){tLen=len;tStart=Date.now();clearInterval(tIv);tIv=setInterval(()=>{const left=tLen-(Date.now()-tStart)/1000;const el=document.getElementById("tm");
+  if(el){el.textContent=clockText(Math.max(0,Math.ceil(left)));el.classList.toggle("late",left<=10);}
+  const bb=document.getElementById("tb");if(bb)bb.style.width=Math.max(0,left/tLen*100)+"%";if(left<=0){clearInterval(tIv);choose(-1);}},250);}
+function choose(v){if(S.screen!=="item"||S.fb)return;clearInterval(tIv);const i=S.plan[S.L].order[S.I];const before=value();S.ans[S.L+"_"+i]=v;S.lastGain=value()-before;S.fb=true;save();render();}
+
+/* ================= launch plan ================= */
+const TYPES=["Convenience","Shopping","Specialty","Unsought"];
+const LINES=["More depth (new versions of an item)","More length (a new item in an existing line)","More width (a whole new line)"];
+function studioReady(){const p=S.studio;return p.idea.trim().length>=4&&p.core.trim().length>=8&&p.actual.trim().length>=8&&p.aug.trim().length>=8&&p.type!=null&&p.line!=null&&p.move.trim().length>=20;}
+function planLines(p){return [["New product",p.idea],["Core benefit",p.core],["Actual product",p.actual],["Augmented product",p.aug],["Product type",p.type!=null?TYPES[p.type]:""],["Product mix effect",p.line!=null?LINES[p.line]:""],["First-year move",p.move]];}
+function planCard(p){return planLines(p).map(([k,v])=>`<div class="line" style="display:block"><span class="small muted">${k}</span><br><b style="white-space:normal">${esc(v)||"—"}</b></div>`).join("");}
+function barcode(seed){let h=0;for(const ch of seed)h=(h*31+ch.charCodeAt(0))>>>0;let x=0,bars="";for(let i=0;i<46;i++){h=(h*1103515245+12345)>>>0;const w=1+(h>>>28)%3;if(i%2===0)bars+=`<rect x="${x}" y="0" width="${w}" height="54" fill="#10142B"/>`;x+=w+1;}return `<svg class="barcode" width="${x}" height="54" viewBox="0 0 ${x} 54" aria-hidden="true">${bars}</svg>`;}
+
+/* ================= views ================= */
+function basket(){const g=S.lastGain;const show=S.screen==="item"&&S.fb&&g>0;
+  return `<div class="basket"><span class="logo">ROVA</span><span class="small blabel" style="opacity:.8">Annual sales</span>${show?`<span class="delta">+${fmt(g)}</span>`:""}<span class="total">${fmt(value())}<small>EGP</small></span></div>`;}
+function vStart(){
+  const ready=S.group.trim().length>=2&&S.members.trim().length>=3;
+  return `<div class="stack onwall"><div class="hero stack" style="gap:14px"><span class="sign">Build a Brand · Part 2 · Now open</span><h1>Run the <span>Range</span></h1>
+   <p style="font-size:20px;max-width:32ch">Rova is back, and its shop is getting bigger. You help Mariam and Omar run the range. Five aisles, one goal: grow Rova’s sales.</p></div>
+  <div class="receipt" style="color:var(--ink)"><h3>Client brief</h3>
+   <div class="line"><span>Client</span><b>Rova sneakers</b></div><div class="line"><span>Sold in</span><b>Own stores + sports shops</b></div>
+   <div class="line"><span>Coming next</span><b>New products, a repair service</b></div><div class="line tot"><span>Annual sales today</span><b>${fmt(START_VALUE)} EGP</b></div></div>
+  <div class="aisles">${LEVELS.map((L,i)=>{const m=L.items.reduce((b,it)=>b+(it.type==="cls"?CLS_PTS:it.pts),0);return `<div class="aisle"><span class="n">Aisle 0${i+1}</span><div><h3>${esc(L.t)}</h3><p class="small muted">${esc(L.step)}</p></div><span class="p">${m} pts</span></div>`;}).join("")}
+   <div class="aisle"><span class="n">Checkout</span><div><h3>Launch plan</h3><p class="small muted">Plan a new Rova product. Marked by your teacher</p></div><span class="p">${TEACHER} pts</span></div></div>
+  <div class="note"><b>Shop rules:</b> 45 seconds per quick question, 90 per big deal. Time out = 0 points. Coupons (hints) are allowed, but a coupon puts that question at half price. Play on your own phone and make your own decisions.</div>
+  <div class="card stack" style="gap:8px">
+   <label for="gp">Your full name</label><input type="text" id="gp" data-f="group" maxlength="60" autocomplete="name" value="${esc(S.group)}">
+   <label for="mb">Student ID</label><input type="text" id="mb" data-f="members" maxlength="30" inputmode="numeric" value="${esc(S.members)}">
+   <label for="sc">Section <span class="muted" style="font-weight:400">(optional)</span></label><input type="text" id="sc" data-f="section" maxlength="30" value="${esc(S.section)}"></div>
+  <button class="go" data-act="begin" ${ready?"":"disabled"}>Open the shop →</button></div>`;
+}
+function vIntro(){const L=LEVELS[S.L];
+  return `<div class="stack"><div class="hang"><div class="a">Aisle 0${S.L+1}</div><h2>${esc(L.t)}</h2><p class="small muted">${esc(L.step)}</p></div>
+   <div class="card"><p>${esc(L.intro)}</p></div><button class="go" data-act="startlevel">Walk in →</button></div>`;}
+function tagBtn(ci,pos,cls,act){return `<button class="ptag ${cls||""}" ${act||""}><span class="stripe" style="background:${STRIPES[ci%4]}"></span><b>${esc(LEVELS[S.L].cats[ci])}</b><span class="k">${KEY[pos]}</span></button>`;}
+function vItem(){
+  const L=LEVELS[S.L],P=S.plan[S.L],i=P.order[S.I],it=L.items[i],btn=P.btn[i],a=S.ans[S.L+"_"+i];
+  const used=!!S.hint[S.L+"_"+i],len=it.type==="cls"?T_CLS:T_PICK;
+  const dots=`<div class="dots" aria-label="Question ${S.I+1} of ${L.items.length}">${L.items.map((_,k)=>`<i class="${k<S.I||(k===S.I&&S.fb)?"done":k===S.I?"now":""}"></i>`).join("")}</div>`;
+  const head=`<div class="qtop"><span style="font-family:var(--sign);font-size:18px">Aisle 0${S.L+1}</span>${dots}${S.fb?"":`<span class="clock" id="tm">${clockText(len)}</span>`}</div>${S.fb?"":`<div class="tbar" aria-hidden="true"><i id="tb" style="width:100%"></i></div>`}`;
+  const hintHTML=S.fb?"":(used?`<div class="hint"><b>Coupon used:</b> ${esc(L.hint)}</div>`:`<button class="coupon" data-act="hint">✂ Use a coupon: hint, but this question is half price</button>`);
+  const gainTxt=g=>g?`<b>+${g} pts</b><br>sales +${fmt(g*PER_POINT)} EGP${used?"<br><span class='small' style='opacity:.8'>half price: coupon used</span>":""}`:`<b>+0 pts</b><br>no sale this time`;
+  if(it.type==="cls"){
+    if(!S.fb)return `<div class="stack">${head}<p class="ask">${esc(L.ask||"Which one is this?")}</p><h2 class="q">${esc(it.q)}</h2>${hintHTML}<div class="tags">${btn.map((ci,p)=>tagBtn(ci,p,"",`data-act="cls" data-i="${ci}"`)).join("")}</div></div>`;
+    const ok=a===it.a;const g=ptsFor(S.L,i,a);
+    return `<div class="stack">${head}<div class="fb"><span class="sticker ${ok?"ok":"no"}">${ok?"SOLD!":(a<0?"OUT OF TIME":"RETURNED")}</span><p class="gain">${gainTxt(g)}</p></div>
+     <h2 class="q" style="font-size:20px">${esc(it.q)}</h2><div class="tags">${btn.map((ci,p)=>tagBtn(ci,p,ci===it.a?"right":"dim",'tabindex="-1" aria-disabled="true"')).join("")}</div>
+     <div class="why"><b>${esc(L.cats[it.a])}.</b> ${esc(it.x)}</div><button class="go" data-act="next">Next →</button></div>`;
+  }
+  if(!S.fb)return `<div class="stack">${head}<span class="deal">${esc(it.tag||"Big deal")} · up to ${it.pts} pts</span><h2 class="q">${esc(it.q)}</h2><p class="small" style="color:var(--sky)">${esc(it.note||"Every option sounds fine. Only one is the best for the brand.")}</p>${hintHTML}
+     <div class="opts">${btn.map((k,p)=>`<button class="opt" data-act="pick" data-i="${k}"><span class="l">${KEY[p]}</span><span>${esc(it.o[k][0])}</span></button>`).join("")}</div></div>`;
+  const kind=a>=0?it.o[a][1]:null;const got=ptsFor(S.L,i,a);
+  const st=a<0?["no","OUT OF TIME"]:kind==="best"?["ok","SOLD!"]:kind==="half"?["half","50% OFF"]:["no","RETURNED"];
+  return `<div class="stack">${head}<div class="fb"><span class="sticker ${st[0]}">${st[1]}</span><p class="gain">${gainTxt(got)}</p></div>
+     <div class="opts">${btn.map((k,p)=>{const o=it.o[k];return `<div class="fbopt ${o[1]} ${k===a||o[1]==="best"?"":"dim"}"><span class="l">${KEY[p]}</span><div class="stack" style="gap:4px"><span class="k">${o[1]==="best"?"Best deal":o[1]==="half"?"Half right":"Trap"}${k===a?" · your pick":""}</span><p><b>${esc(o[0])}</b></p><p class="small">${esc(o[2])}</p></div></div>`;}).join("")}</div>
+     <button class="go" data-act="next">Next →</button></div>`;
+}
+function vLevelDone(){const [t,m]=levelPts(S.L);const last=S.L===LEVELS.length-1;
+  return `<div class="stack"><div class="receipt"><h3>Aisle 0${S.L+1} receipt</h3><div class="line"><span>${esc(LEVELS[S.L].t)}</span><b>${t} / ${m} pts</b></div><div class="line tot"><span>Annual sales now</span><b>${fmt(value())} EGP</b></div></div>
+   <button class="go" data-act="nextlevel">${last?"Go to checkout →":"Next aisle →"}</button></div>`;}
+function vStudio(){const p=S.studio;
+  return `<div class="stack"><div class="hang"><div class="a">Checkout</div><h2>Launch plan</h2><p class="small muted">Plan Rova’s next product · marked by your teacher</p></div>
+  <div class="card small"><b>Marked out of ${TEACHER}:</b> the three product levels are clearly separated and fit your product (8) · the product type and product mix effect are right for your product (6) · the first-year move fits the introduction stage (6)</div>
+  <div class="sec"><h3><span>1</span><label for="idea">Your new Rova product</label></h3><input type="text" id="idea" data-st="idea" maxlength="80" placeholder="Not one from the game" value="${esc(p.idea)}"></div>
+  <div class="sec"><h3><span>2</span>Its three levels</h3>
+   <label for="core" class="small">Core benefit: why will people buy it?</label><input type="text" id="core" data-st="core" maxlength="140" value="${esc(p.core)}">
+   <label for="actual" class="small">Actual product: features, design, packaging</label><input type="text" id="actual" data-st="actual" maxlength="140" value="${esc(p.actual)}">
+   <label for="aug" class="small">Augmented product: the extras around it</label><input type="text" id="aug" data-st="aug" maxlength="140" value="${esc(p.aug)}"></div>
+  <div class="sec"><h3><span>3</span>What kind of consumer product is it?</h3><div class="choices">${TYPES.map((x,i)=>`<button class="${p.type===i?"on":""}" data-act="ptype" data-i="${i}" aria-pressed="${p.type===i}">${x}</button>`).join("")}</div></div>
+  <div class="sec"><h3><span>4</span>What does it do to Rova’s product mix?</h3><div class="choices">${LINES.map((x,i)=>`<button class="${p.line===i?"on":""}" data-act="pline" data-i="${i}" aria-pressed="${p.line===i}">${x}</button>`).join("")}</div></div>
+  <div class="sec"><h3><span>5</span><label for="move">It starts in the introduction stage. What is your first-year marketing move?</label></h3><textarea id="move" data-st="move" maxlength="400">${esc(p.move)}</textarea></div>
+  <p class="small" style="color:var(--sky)">You can’t change your plan after you pay at the checkout.</p>
+  <button class="go" data-act="finish" id="finishBtn" ${studioReady()?"":"disabled"}>Pay at the checkout →</button></div>`;}
+function badge(t){const p=t/AUTO;return p>=.8?"Range Master":p>=.6?"Product Pro":p>=.4?"Growing Range":"Range in Trouble";}
+function memberList(){return [S.members.trim()].filter(Boolean);}
+function resultText(){
+  const t=total();const d=new Date(S.finished||Date.now());const w=S.studio;
+  return [`RUN THE RANGE (BUILD A BRAND PART 2) · BUS 1410`,`Name: ${S.group}`,`Student ID: ${S.members.trim()}`,S.section?`Section: ${S.section}`:null,`Finished: ${d.toLocaleString()}`,`Attempt: ${S.attempt}`,
+   ...LEVELS.map((L,i)=>{const [a,m]=levelPts(i);return `Level ${i+1} (${L.t}): ${a} / ${m}`;}),
+   `Auto score (Levels 1–5): ${t} / ${AUTO}`,`Level 6 (teacher): ___ / ${TEACHER}`,`Final: ___ / 100`,`Annual sales: ${fmt(value())} EGP`,
+   ...planLines(w).map(([k,v])=>`Level 6 ${k.toLowerCase()}: ${String(v).trim()}`)].filter(Boolean).join("\n");
+}
+function vResults(){
+  const t=total();const d=new Date(S.finished);const w=S.studio;
+  return `<div class="stack"><div class="receipt"><div style="text-align:center" class="stack"><span class="rank" style="align-self:center">${badge(t)}</span><h3>ROVA · Range report</h3>
+    <p class="small muted">${esc(d.toLocaleString())} · Attempt ${S.attempt}</p></div>
+   <div class="line"><span>Student</span><b>${esc(S.group)}</b></div><div class="line"><span>ID</span><b>${esc(S.members.trim())}${S.section?" · Sec "+esc(S.section):""}</b></div>
+   ${LEVELS.map((L,i)=>{const [a,m]=levelPts(i);return `<div class="line"><span>Aisle 0${i+1} · ${esc(L.t)}</span><b>${a} / ${m}</b></div>`;}).join("")}
+   <div class="line tot"><span>Subtotal (Levels 1–5)</span><b>${t} / ${AUTO}</b></div>
+   <div class="line"><span>Checkout · Launch plan (teacher)</span><b>___ / ${TEACHER}</b></div>
+   <div class="line tot"><span>TOTAL</span><b>___ / 100</b></div>
+   <div class="line"><span>Rova’s annual sales</span><b>${fmt(value())} EGP</b></div>
+   <h3 style="margin-top:16px;font-size:20px">Launch plan</h3>${planCard(w)}
+   ${barcode(S.group+S.finished)}<p class="small muted" style="text-align:center">Thank you for shopping with Rova</p></div>
+  <div class="note"><b>Hand it in:</b> take a screenshot of this receipt, or press Copy and paste the text where your teacher asked.</div>
+  <button class="go" data-act="copy">Copy our receipt</button>
+  <button class="ghost" data-act="again">Play again (counts as a new attempt)</button></div>`;
+}
+function render(){
+  const app=document.getElementById("app");
+  const ae=document.activeElement,active=ae&&(ae.tagName==="INPUT"||ae.tagName==="TEXTAREA")?ae.id:null;
+  const keep=active?{v:ae.value,s:ae.selectionStart,e:ae.selectionEnd}:null;
+  const v={start:vStart,intro:vIntro,item:vItem,done:vLevelDone,written:vStudio,res:vResults}[S.screen]||vStart;
+  app.innerHTML=(S.screen==="start"?"":basket())+v();
+  if(active){const el=document.getElementById(active);if(el){el.value=keep.v;el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(err){}}}
+  const sig=S.screen+"|"+S.L+"|"+S.I+"|"+S.fb;if(sig!==window.__sig){window.__sig=sig;window.scrollTo(0,0);if(S.screen==="item"&&!S.fb){const it=LEVELS[S.L].items[S.plan[S.L].order[S.I]];startTimer(it.type==="cls"?T_CLS:T_PICK);}}
+}
+document.addEventListener("input",e=>{
+  const f=e.target.dataset.f;if(f){S[f]=e.target.value;save();const b=document.querySelector('[data-act="begin"]');if(b)b.disabled=!(S.group.trim().length>=2&&S.members.trim().length>=3);}
+  const w=e.target.dataset.st;if(w){S.studio[w]=e.target.value;save();const b=document.getElementById("finishBtn");if(b)b.disabled=!studioReady();}
+});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  const curIdx=()=>S.plan[S.L].order[S.I];
+  switch(a){
+    case "begin":S.attempt=(S.attempt||0)+1;S.plan=makePlan();S.ans={};S.hint={};S.L=0;S.I=0;S.fb=false;S.screen="intro";break;
+    case "startlevel":S.I=0;S.fb=false;S.screen="item";break;
+    case "cls":case "pick":choose(+b.dataset.i);return;
+    case "hint":if(S.fb)return;S.hint[S.L+"_"+curIdx()]=true;save();render();return;
+    case "next":S.fb=false;if(S.I<LEVELS[S.L].items.length-1)S.I++;else S.screen="done";break;
+    case "nextlevel":if(S.L<LEVELS.length-1){S.L++;S.screen="intro";}else S.screen="written";break;
+    case "ptype":S.studio.type=+b.dataset.i;break;
+    case "pline":S.studio.line=+b.dataset.i;break;
+    case "finish":if(!studioReady())return;S.finished=Date.now();S.screen="res";break;
+    case "copy":{const txt=resultText();try{navigator.clipboard.writeText(txt).then(()=>{b.textContent="Copied ✓";},()=>{b.textContent="Copy didn’t work: take a screenshot";});}catch(err){b.textContent="Copy didn’t work: take a screenshot";}return;}
+    case "again":{const g=S.group,m=S.members,s=S.section,att=S.attempt;S=blank();S.group=g;S.members=m;S.section=s;S.attempt=att;break;}
+  }
+  save();render();
+});
+render();
+</script>
+</body>
+</html>
